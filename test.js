@@ -98,13 +98,14 @@ function Test(scope) {
 
 function Ca(label, test) {
     var InstanceDeTest = Testeur.Courant();
+    InstanceDeTest.ResultatDuTest = true;
     InstanceDeTest.Initialiser();
     try {
         test();
         console.log("Ca " + label + " : " + (InstanceDeTest.ResultatDuTest ? "VERT" : "ROUGE"));
     }
     catch (err) {
-        console.log("Ca " + label + " : " + err.message);
+        console.log("Ca " + label + " : " + err.message );
     }
     InstanceDeTest.Nettoyer();
 }
