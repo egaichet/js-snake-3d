@@ -1,11 +1,3 @@
-function calculerLaDistanceEntreDeuxPointsSurUnAxe(point1, point2) {
-    var distance = point2 - point1;
-    if (distance < 0) {
-        return distance * -1;
-    }
-    return distance;
-}
-
 function Coordonnees(param) {
 	var x = 0;
 	var y = 0;
@@ -67,6 +59,13 @@ function Coordonnees(param) {
 		}
 	}
 }
+Coordonnees.calculerLaDistanceEntreDeuxPointsSurUnAxe = function (point1, point2) {
+    var distance = point2 - point1;
+    if (distance < 0) {
+        return distance * -1;
+    }
+    return distance;
+};
 
 function DimensionCube(param) {
 	var longueur = 0;
@@ -122,13 +121,13 @@ function Cube(param) {
 	    function calculerLaDistanceSurLAxeDAlignement() {
 	        var distance = 0;
 	        if (position.estAligneSurLAxeX(objet.position())) {
-	            distance = calculerLaDistanceEntreDeuxPointsSurUnAxe(position.x(), objet.position().x());
+	            distance = Coordonnees.calculerLaDistanceEntreDeuxPointsSurUnAxe(position.x(), objet.position().x());
 	        }
 	        if (position.estAligneSurLAxeY(objet.position())) {
-	            distance = calculerLaDistanceEntreDeuxPointsSurUnAxe(position.y(), objet.position().y());
+	            distance = Coordonnees.calculerLaDistanceEntreDeuxPointsSurUnAxe(position.y(), objet.position().y());
 	        }
 	        if (position.estAligneSurLAxeZ(objet.position())) {
-	            distance = calculerLaDistanceEntreDeuxPointsSurUnAxe(position.z(), objet.position().z());
+	            distance = Coordonnees.calculerLaDistanceEntreDeuxPointsSurUnAxe(position.z(), objet.position().z());
 	        }
 	        return distance;
 	    }
@@ -209,11 +208,13 @@ function DirectionSnake(param) {
 function Snake(param) {
 	var DIMENSION_CUBE_DEFAUT = new DimensionCube({longueur: 10});
 	
+	var ceSnake = this;
 	var directionSuivante = new DirectionSnake();
 	var scene = new Cube();
 	var corps = new Array();
 	var aMange = false;
 	
+	this.estUnSnake = true;
 	this.corps = function() { return corps; };
 	this.changerDeDirection = function (nouvelleDirection) {
 	    if (nouvelleDirection != null && nouvelleDirection.estUneDirectionSnake && estUneDirectionValide()) {
@@ -309,30 +310,18 @@ function Snake(param) {
 	    }
 	};
 	this.mangeUnBonus = function (bonus) {
-	    if (bonus != null && bonus.estUneListeDeBonus) {
+	    if (bonus != null && bonus.estUnBonus) {
 	        return manger();
 	    }
 	    return false;
 
 	    function manger() {
 	        var tete = corps[0];
-	        var listeBonus = bonus.liste();
-	        var indexDuBonusMange = trouverLIndexDuBonusMange();
-	        if (indexDuBonusMange != null) {
-	            listeBonus.splice(indexDuBonusMange, 1);
+	        if (tete.aLaMemePosition(bonus.courant())) {
 	            aMange = true;
-	            return true;
+	            bonus.genererUnBonus(ceSnake);
 	        }
-	        return false;
-
-	        function trouverLIndexDuBonusMange() {
-	            for (var i = 0; i < listeBonus.length; i++) {
-	                if (listeBonus[i].aLaMemePosition(tete)) {
-	                    return i;
-	                }
-	            }
-	            return null;
-	        }
+	        return aMange;
 	    }
 	};
 	this.seMord = function () {
@@ -391,52 +380,74 @@ function Snake(param) {
 	}
 }
 
-function ListeBonus(param) {
+function Bonus(param) {
     var DIMENSION_BONUS_DEFAUT = new DimensionCube({ longueur: 10 });
 
-    var liste = new Array();
     var scene = new Cube();
-
-    this.estUneListeDeBonus = true;
-    this.liste = function () { return liste; };
-    this.genererUnBonus = function () {
+    var bonusCourant = null;
+    this.estUnBonus = true;
+    this.courant = function () { return bonusCourant; };
+    this.genererUnBonus = function (snake) {
         var nouveauBonus = new Cube({
             coordonnees: genererLesCoordonneesDuBonus(),
             dimension: DIMENSION_BONUS_DEFAUT
         });
-        liste.push(nouveauBonus);
+        if (leBonusEstSurUnElementDuSnake()) {
+            return this(snake);
+        }
+        bonusCourant = nouveauBonus;
 
         function genererLesCoordonneesDuBonus() {
             var xDuBonus = genererUneCoordonneeAleatoireEntreDeuxPoints(
-                calculerLaCoordonneeDuPlanSuperieur(scene.position().x(), scene.dimension().longueur()),
-                calculerLaCoordonneeDuPlanInferieur(scene.position().x(), scene.dimension().longueur())
+                scene.positionXMax(),
+                scene.positionXMin()
             );
             var yDuBonus = genererUneCoordonneeAleatoireEntreDeuxPoints(
-                calculerLaCoordonneeDuPlanSuperieur(scene.position().y(), scene.dimension().longueur()),
-                calculerLaCoordonneeDuPlanInferieur(scene.position().y(), scene.dimension().longueur())
+                scene.positionYMax(),
+                scene.positionYMin()
             );
             var zDuBonus = genererUneCoordonneeAleatoireEntreDeuxPoints(
-                calculerLaCoordonneeDuPlanSuperieur(scene.position().z(), scene.dimension().longueur()),
-                calculerLaCoordonneeDuPlanInferieur(scene.position().z(), scene.dimension().longueur())
+                scene.positionZMax(),
+                scene.positionZMin()
             );
-            return new Coordonnees({
+            var coordonneesGenerees = new Coordonnees({
                 x: xDuBonus,
                 y: yDuBonus,
                 z: zDuBonus
             });
+            return coordonneesGenerees;
         }
+
         function genererUneCoordonneeAleatoireEntreDeuxPoints(point1, point2) {
-            var distance = calculerLaDistanceEntreDeuxPointsSurUnAxe(point1, point2);
+            var distance = Coordonnees.calculerLaDistanceEntreDeuxPointsSurUnAxe(point1, point2);
             var nombreDeCubePossibleSurLaDistance = distance / DIMENSION_BONUS_DEFAUT.longueur();
             var nombreAleatoireEntre0Et9 = Math.floor(Math.random() * 10);
             var decalagePourCentrerLaCoordonnee = DIMENSION_BONUS_DEFAUT.longueur() / 2;
             return nombreAleatoireEntre0Et9 % nombreDeCubePossibleSurLaDistance + decalagePourCentrerLaCoordonnee;
         }
-        function calculerLaCoordonneeDuPlanSuperieur(coordonneeDuCentre, longueur) {
-            return coordonneeDuCentre + longueur / 2;
+        function leBonusEstSurUnElementDuSnake() {
+            if (snake != null && snake.estUnSnake) {
+                return verifierSurLeBonusEstSurUnElementDuSnake();
+            }
+            return false;
+
+            function verifierSurLeBonusEstSurUnElementDuSnake() {
+                var estSurUnElementDuSnake = false;
+                for (var i = 0; i < snake.corps() ; i++) {
+                    comparerLesCoordonneesGenereesAvecUnElementDuSnake(snake.corps()[i], estSurUnElementDuSnake);
+                }
+                return estSurUnElementDuSnake
+            }
+            function comparerLesCoordonneesGenereesAvecUnElementDuSnake(element, estSurUnElementDuSnake) {
+                if (element.aLaMemePosition(nouveauBonus)) {
+                    estSurUnElementDuSnake = true;
+                }
+            }
         }
-        function calculerLaCoordonneeDuPlanInferieur(coordonneeDuCentre, longueur) {
-            return coordonneeDuCentre - longueur / 2;
+    };
+    this.placerUnBonus = function (nouveauBonus) {
+        if (nouveauBonus != null && nouveauBonus.estUnCube) {
+            bonusCourant = nouveauBonus;
         }
     };
 
@@ -454,11 +465,42 @@ function ListeBonus(param) {
 function JeuSnake() {
     var LONGUEUR_SCENE = 150;
     var VITESSE_DEFAUT = 400;
+    var POINTS_PAR_BONUS = 10;
 
     var score = 0;
     var continuer = true;
     var scene = new Cube({ dimension: new DimensionCube({ longueur: LONGUEUR_SCENE }) });
-    var snake = new Snake({ scene: scene });
     var bonus = new ListeBonus({ scene: scene });
+    var snake, partieEnCours;
 
+    this.estEnCours = function () { return continuer; };
+    this.scoreActuel = function () { return score; };
+    this.changerLaDirectionDuSnake = function (nouvelleDirection) { snake.changerDeDirection(nouvelleDirection); };
+    this.lancerUnePartie = function () {
+        score = 0;
+        snake = new Snake({ scene: scene });
+        bonus.genererUnBonus(snake);
+        setInterval("jouer()", VITESSE_DEFAUT);
+    };
+    this.elementsADessiner = function () {
+        return {
+            scene: scene,
+            bonus: bonus.courant(),
+            tete: snake.corps()[0],
+            corps: snake.corps().splice(1)
+        };
+    }
+
+    function jouer() {
+        if (!continuer) {
+            clearInterval(partieEnCours);
+        }
+        if (snake.seMord()) {
+            continuer = false;
+        }
+        if (snake.mangeUnBonus(bonus)) {
+            score += POINTS_PAR_BONUS;
+        }
+        snake.avancer();
+    }
 }

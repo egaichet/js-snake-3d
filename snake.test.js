@@ -138,53 +138,48 @@ Test(function() {
 	Ca('teste que la génération d\'un bonus est toujours inclus dans la scène', function () {
 	    var scene = new Cube({
 	        coordonnees: new Coordonnees(),
-	        dimension: new DimensionCube({ longueur: 50 })
+	        dimension: new DimensionCube({ longueur: 30 })
 	    });
-	    var bonus = new ListeBonus({ scene: scene });
-	    generer10Bonus();
-	    OnAttend(bonus.liste().length).DEtreEgalA(10);
-	    verifierQueLesBonusSontInclusDansLaScene();
+	    var snake = new Snake({ scene: scene });
+	    snake.avancer();
+	    var bonus = new Bonus({ scene: scene });
+	    verifierLePlacementDe10GenerationsDeBonus();
 
-	    function generer10Bonus() {
+	    function verifierLePlacementDe10GenerationsDeBonus() {
 	        for (var i = 0; i < 10; i++) {
-	            bonus.genererUnBonus();
+	            bonus.genererUnBonus(snake);
+	            OnAttend(bonus.courant().estInclusDansLeCube(scene)).DEtreVrai();
+	            verifierQueLeBonusNEstPasSurUnElementDuSnake();
 	        }
 	    }
-	    function verifierQueLesBonusSontInclusDansLaScene() {
-	        var listeBonus = bonus.liste();
-	        for (var i = 0; i < listeBonus.length; i++) {
-	            OnAttend(listeBonus[i].estInclusDansLeCube(scene)).DEtreVrai();
+	    function verifierQueLeBonusNEstPasSurUnElementDuSnake() {
+	        for (var i = 0; i < snake.corps().length; i++) {
+	            OnAttend(bonus.courant().aLaMemePosition(snake.corps()[i])).DEtreFaux();
 	        }
 	    }
 	});
 
-	Ca('teste qu\'un snake qui mange un bonus grandit d\'un élément', function () {
+	Ca('teste qu\'un snake qui mange un bonus grandit d\'un élément et génère un nouveau bonus', function () {
 	    var scene = new Cube({
 	        coordonnees: new Coordonnees(),
 	        dimension: new DimensionCube({ longueur: 50 })
 	    });
-	    var bonus = new ListeBonus({ scene: scene });
+	    var bonus = new Bonus({ scene: scene });
 	    var snake = new Snake({ scene: scene });
-	    positionnerLesBonus();
+	    positionnerLeBonus();
 	    OnAttend(snake.corps().length).DEtreEgalA(3);
-	    OnAttend(bonus.liste().length).DEtreEgalA(2);
 	    var aMange = snake.mangeUnBonus(bonus);
 	    snake.avancer();
 	    OnAttend(aMange).DEtreVrai();
 	    OnAttend(snake.corps().length).DEtreEgalA(4);
-	    OnAttend(bonus.liste().length).DEtreEgalA(1);
+	    OnAttend(bonus.courant().position().egale(new Coordonnees())).DEtreFaux();
 
-	    function positionnerLesBonus() {
-	        var listeDesBonus = bonus.liste();
+	    function positionnerLeBonus() {
 	        var bonusSurLaTete = new Cube({
 	            coordonnees: new Coordonnees(),
 	            dimension: new DimensionCube({ longueur: 10 })
 	        });
-	        var bonusAilleurs = new Cube({
-	            coordonnees: new Coordonnees({ x: 10, y: 20, z: 30 }),
-	            dimension: new DimensionCube({ longueur: 10 })
-	        });
-	        listeDesBonus.push(bonusSurLaTete, bonusAilleurs);
+	        bonus.placerUnBonus(bonusSurLaTete);
 	    }
 	});
 
