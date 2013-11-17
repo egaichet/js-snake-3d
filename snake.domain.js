@@ -295,7 +295,20 @@ function Snake(param) {
 	        }
 	    }
 	};
-    //TODO : fonction manger
+	this.seMord = function () {
+	    var tete = corps[0];
+	    var ilMord = false;
+	    for (var i = 1; i < corps.length; i++) {
+	        verifierSIlMordCeCorps(i);
+	    }
+	    return ilMord;
+
+	    function verifierSIlMordCeCorps(index) {
+	        if (tete.aLaMemePosition(corps[index])) {
+	            ilMord = true;
+	        }
+	    }
+	};
 
 	initialiser();
 

@@ -187,4 +187,14 @@ Test(function() {
 	        listeDesBonus.push(bonusSurLaTete, bonusAilleurs);
 	    }
 	});
+
+	Ca('teste qu\'une tête qui avance sur un élément du corps donne une collision', function () {
+	    var snakeQuiMord = new Snake();
+	    var corpsDuSnakeQuiMord = snakeQuiMord.corps();
+	    corpsDuSnakeQuiMord[0].position().bouger({ x: -10 });
+	    OnAttend(snakeQuiMord.seMord()).DEtreVrai();
+
+	    var snakeNormal = new Snake();
+	    OnAttend(snakeNormal.seMord()).DEtreFaux();
+	});
 });
