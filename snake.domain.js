@@ -1,3 +1,11 @@
+function calculerLaDistanceEntreDeuxPointsSurUnAxe(point1, point2) {
+    var distance = point2 - point1;
+    if (distance < 0) {
+        return distance * -1;
+    }
+    return distance;
+}
+
 function Coordonnees(param) {
 	var x = 0;
 	var y = 0;
@@ -9,13 +17,13 @@ function Coordonnees(param) {
 	this.z = function() { return z };
 	this.bouger = function(coordonnees) {
 		if(coordonnees.x != null) {
-			x = coordonnees.x;
+			x += coordonnees.x;
 		}
 		if(coordonnees.y != null) {
-			y = coordonnees.y;
+			y += coordonnees.y;
 		}
 		if(coordonnees.z != null) {
-			z = coordonnees.z;
+			z += coordonnees.z;
 		}
 	};
 	this.egale = function(objet) {
@@ -118,14 +126,6 @@ function Cube(param) {
 	        return distance;
 	    }
 
-	    function calculerLaDistanceEntreDeuxPointsSurUnAxe(point1, point2) {
-	        var distance = point2 - point1;
-	        if (distance < 0) {
-	            return distance * -1;
-	        }
-	        return distance;
-	    }
-
 	    function calculerLaDistanceAttendue() {
 	        return dimension.longueur() / 2 + objet.dimension().longueur() / 2;
 	    }
@@ -134,6 +134,24 @@ function Cube(param) {
 	        return distanceSurAxe > 0 && distanceSurAxe == distanceAttendue;
 	    }
 	};
+	this.estInclusDansLeCube = function (objet) {
+	    if (objet != null && objet.estUnCube) {
+	        return estInclusSurLAxeX() && estInclusSurLAxeY() && estInclusSurLAxeZ();
+
+	        function estInclusSurLAxeX() {
+	            return position.x() + dimension.longueur() / 2 <= objet.position().y() + objet.dimension().longueur() / 2
+	                && position.x() - dimension.longueur() / 2 >= objet.position().y() - objet.dimension().longueur() / 2;
+	        }
+	        function estInclusSurLAxeY() {
+	            return position.y() + dimension.longueur() / 2 <= objet.position().y() + objet.dimension().longueur() / 2
+	                && position.y() - dimension.longueur() / 2 >= objet.position().y() - objet.dimension().longueur() / 2;
+	        }
+	        function estInclusSurLAxeZ() {
+	            return position.z() + dimension.longueur() / 2 <= objet.position().z() + objet.dimension().longueur() / 2
+	                && position.z() - dimension.longueur() / 2 >= objet.position().z() - objet.dimension().longueur() / 2;
+	        }
+	    }
+	}
 	
 	
 	if(param != null) {
@@ -187,6 +205,7 @@ function Snake(param) {
 	var directionSuivante = new DirectionSnake();
 	var scene = new Cube();
 	var corps = new Array();
+	var aMange = false;
 	
 	this.corps = function() { return corps; };
 	this.changerDeDirection = function (nouvelleDirection) {
@@ -242,7 +261,38 @@ function Snake(param) {
 	        }
 	    }
 	    function retirerLaQueue() {
-	        corps.pop();
+	        if (!aMange) {
+	            corps.pop();
+	        } else {
+	            aMange = false;
+	        }
+	    }
+	};
+	this.mangeUnBonus = function (bonus) {
+	    if (bonus != null && bonus.estUneListeDeBonus) {
+	        return manger();
+	    }
+	    return false;
+
+	    function manger() {
+	        var tete = corps[0];
+	        var listeBonus = bonus.liste();
+	        var indexDuBonusMange = trouverLIndexDuBonusMange();
+	        if (indexDuBonusMange != null) {
+	            listeBonus.splice(indexDuBonusMange, 1);
+	            aMange = true;
+	            return true;
+	        }
+	        return false;
+
+	        function trouverLIndexDuBonusMange() {
+	            for (var i = 0; i < listeBonus.length; i++) {
+	                if (listeBonus[i].aLaMemePosition(tete)) {
+	                    return i;
+	                }
+	            }
+	            return null;
+	        }
 	    }
 	};
     //TODO : fonction manger
@@ -253,7 +303,7 @@ function Snake(param) {
 	    var LONGUEUR_SNAKE_DEFAUT = 3;
 
 	    function parametrer() {
-	        if (param.scene != null) {
+	        if (param.scene != null && param.scene.estUnCube) {
 	            scene = param.scene;
 	        }
 	    }
@@ -286,4 +336,64 @@ function Snake(param) {
 	    }
 	    construireLeCorpsInitial();
 	}
+}
+
+function ListeBonus(param) {
+    var DIMENSION_BONUS_DEFAUT = new DimensionCube({ longueur: 10 });
+
+    var liste = new Array();
+    var scene = new Cube();
+
+    this.estUneListeDeBonus = true;
+    this.liste = function () { return liste; };
+    this.genererUnBonus = function () {
+        var nouveauBonus = new Cube({
+            coordonnees: genererLesCoordonneesDuBonus(),
+            dimension: DIMENSION_BONUS_DEFAUT
+        });
+        liste.push(nouveauBonus);
+
+        function genererLesCoordonneesDuBonus() {
+            var xDuBonus = genererUneCoordonneeAleatoireEntreDeuxPoints(
+                calculerLaCoordonneeDuPlanSuperieur(scene.position().x(), scene.dimension().longueur()),
+                calculerLaCoordonneeDuPlanInferieur(scene.position().x(), scene.dimension().longueur())
+            );
+            var yDuBonus = genererUneCoordonneeAleatoireEntreDeuxPoints(
+                calculerLaCoordonneeDuPlanSuperieur(scene.position().y(), scene.dimension().longueur()),
+                calculerLaCoordonneeDuPlanInferieur(scene.position().y(), scene.dimension().longueur())
+            );
+            var zDuBonus = genererUneCoordonneeAleatoireEntreDeuxPoints(
+                calculerLaCoordonneeDuPlanSuperieur(scene.position().z(), scene.dimension().longueur()),
+                calculerLaCoordonneeDuPlanInferieur(scene.position().z(), scene.dimension().longueur())
+            );
+            return new Coordonnees({
+                x: xDuBonus,
+                y: yDuBonus,
+                z: zDuBonus
+            });
+        }
+        function genererUneCoordonneeAleatoireEntreDeuxPoints(point1, point2) {
+            var distance = calculerLaDistanceEntreDeuxPointsSurUnAxe(point1, point2);
+            var nombreDeCubePossibleSurLaDistance = distance / DIMENSION_BONUS_DEFAUT.longueur();
+            var nombreAleatoireEntre0Et9 = Math.floor(Math.random() * 10);
+            var decalagePourCentrerLaCoordonnee = DIMENSION_BONUS_DEFAUT.longueur() / 2;
+            return nombreAleatoireEntre0Et9 % nombreDeCubePossibleSurLaDistance + decalagePourCentrerLaCoordonnee;
+        }
+        function calculerLaCoordonneeDuPlanSuperieur(coordonneeDuCentre, longueur) {
+            return coordonneeDuCentre + longueur / 2;
+        }
+        function calculerLaCoordonneeDuPlanInferieur(coordonneeDuCentre, longueur) {
+            return coordonneeDuCentre - longueur / 2;
+        }
+    };
+
+    if (param != null) {
+        initialiser();
+    }
+
+    function initialiser() {
+        if (param.scene != null && param.scene.estUnCube) {
+            scene = param.scene;
+        }
+    }
 }

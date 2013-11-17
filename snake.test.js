@@ -55,6 +55,19 @@ Test(function() {
 		OnAttend(cubeReference.estJuxtapose(cubeJuxtapose)).DEtreVrai();
 		OnAttend(cubeReference.estJuxtapose(cubePasJuxtapose)).DEtreFaux();
 	});
+
+	Ca('teste qu\'un cube peut être inclus dans un autre cube', function () {
+	    var grosCube = new Cube({
+	        dimension: new DimensionCube({ longueur: 50 }),
+            coordonnees: new Coordonnees()
+	    });
+	    var petitCube = new Cube({
+	        dimension: new DimensionCube({ longueur: 10 }),
+            coordonnees: new Coordonnees()
+	    });
+	    OnAttend(petitCube.estInclusDansLeCube(grosCube)).DEtreVrai();
+	    OnAttend(grosCube.estInclusDansLeCube(petitCube)).DEtreFaux();
+	});
 	
 	Ca('teste qu\'un snake vide est composé de 3 objets juxtaposés', function() {
 		var snake = new Snake();
@@ -119,6 +132,59 @@ Test(function() {
 	        for (var i = 0; i < corpsNormal.length; i++) {
 	            OnAttend(corpsNormal[i].aLaMemePosition(corpsAvecChangement[i])).DEtreVrai();
 	        }
+	    }
+	});
+
+	Ca('teste que la génération d\'un bonus est toujours inclus dans la scène', function () {
+	    var scene = new Cube({
+	        coordonnees: new Coordonnees(),
+	        dimension: new DimensionCube({ longueur: 50 })
+	    });
+	    var bonus = new ListeBonus({ scene: scene });
+	    generer10Bonus();
+	    OnAttend(bonus.liste().length).DEtreEgalA(10);
+	    verifierQueLesBonusSontInclusDansLaScene();
+
+	    function generer10Bonus() {
+	        for (var i = 0; i < 10; i++) {
+	            bonus.genererUnBonus();
+	        }
+	    }
+	    function verifierQueLesBonusSontInclusDansLaScene() {
+	        var listeBonus = bonus.liste();
+	        for (var i = 0; i < listeBonus.length; i++) {
+	            OnAttend(listeBonus[i].estInclusDansLeCube(scene)).DEtreVrai();
+	        }
+	    }
+	});
+
+	Ca('teste qu\'un snake qui mange un bonus grandit d\'un élément', function () {
+	    var scene = new Cube({
+	        coordonnees: new Coordonnees(),
+	        dimension: new DimensionCube({ longueur: 50 })
+	    });
+	    var bonus = new ListeBonus({ scene: scene });
+	    var snake = new Snake({ scene: scene });
+	    positionnerLesBonus();
+	    OnAttend(snake.corps().length).DEtreEgalA(3);
+	    OnAttend(bonus.liste().length).DEtreEgalA(2);
+	    var aMange = snake.mangeUnBonus(bonus);
+	    snake.avancer();
+	    OnAttend(aMange).DEtreVrai();
+	    OnAttend(snake.corps().length).DEtreEgalA(4);
+	    OnAttend(bonus.liste().length).DEtreEgalA(1);
+
+	    function positionnerLesBonus() {
+	        var listeDesBonus = bonus.liste();
+	        var bonusSurLaTete = new Cube({
+	            coordonnees: new Coordonnees(),
+	            dimension: new DimensionCube({ longueur: 10 })
+	        });
+	        var bonusAilleurs = new Cube({
+	            coordonnees: new Coordonnees({ x: 10, y: 20, z: 30 }),
+	            dimension: new DimensionCube({ longueur: 10 })
+	        });
+	        listeDesBonus.push(bonusSurLaTete, bonusAilleurs);
 	    }
 	});
 });
