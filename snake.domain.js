@@ -86,11 +86,18 @@ function DimensionCube(param) {
 
 
 function Cube(param) {
+    var ceCube = this;
 	var position = new Coordonnees();
 	var dimension = new DimensionCube();
 	
 	this.estUnCube = true;
 	this.position = function() { return position; };
+	this.positionXMax = function() { return position.x() + dimension.longueur() / 2 };
+	this.positionXMin = function() { return position.x() - dimension.longueur() / 2 };
+	this.positionYMax = function() { return position.y() + dimension.longueur() / 2 };
+	this.positionYMin = function() { return position.y() - dimension.longueur() / 2 };
+	this.positionZMax = function() { return position.z() + dimension.longueur() / 2 };
+	this.positionZMin = function() { return position.z() - dimension.longueur() / 2 };
 	this.dimension = function() { return dimension; };
 	this.aLaMemePosition = function(objet) {
 		if(objet != null && objet.position != null) {
@@ -139,16 +146,16 @@ function Cube(param) {
 	        return estInclusSurLAxeX() && estInclusSurLAxeY() && estInclusSurLAxeZ();
 
 	        function estInclusSurLAxeX() {
-	            return position.x() + dimension.longueur() / 2 <= objet.position().y() + objet.dimension().longueur() / 2
-	                && position.x() - dimension.longueur() / 2 >= objet.position().y() - objet.dimension().longueur() / 2;
+	            return ceCube.positionXMax() <= objet.positionXMax()
+	                && ceCube.positionXMin() >= objet.positionXMin();
 	        }
 	        function estInclusSurLAxeY() {
-	            return position.y() + dimension.longueur() / 2 <= objet.position().y() + objet.dimension().longueur() / 2
-	                && position.y() - dimension.longueur() / 2 >= objet.position().y() - objet.dimension().longueur() / 2;
+	            return ceCube.positionYMax() <= objet.positionYMax()
+	                && ceCube.positionYMin() >= objet.positionYMin();
 	        }
 	        function estInclusSurLAxeZ() {
-	            return position.z() + dimension.longueur() / 2 <= objet.position().z() + objet.dimension().longueur() / 2
-	                && position.z() - dimension.longueur() / 2 >= objet.position().z() - objet.dimension().longueur() / 2;
+	            return ceCube.positionZMax() <= objet.positionZMax()
+	                && ceCube.positionZMin() >= objet.positionZMin();
 	        }
 	    }
 	}
@@ -230,6 +237,7 @@ function Snake(param) {
 	            dimension: DIMENSION_CUBE_DEFAUT,
 	            coordonnees: positionNouvelleTete
 	        });
+	        bougerLaTeteSiSortieDeScene();
 	        corps.unshift(nouvelleTete);
 
 	        function initialiserLaPositionDeLaNouvelleTete() {
@@ -258,6 +266,38 @@ function Snake(param) {
 	                return { z: longueurMouvement };
 	            }
 	            return null;
+	        }
+	        function bougerLaTeteSiSortieDeScene() {
+	            if (!nouvelleTete.estInclusDansLeCube(scene)) {
+	                ajusterSurX();
+	                ajusterSurY();
+	                ajusterSurZ();
+	            }
+
+	            function ajusterSurX() {
+	                if (nouvelleTete.position().x() > scene.positionXMax()) {
+	                    nouvelleTete.position().bouger({ x: -scene.dimension().longueur() });
+	                }
+	                if (nouvelleTete.position().x() < scene.positionXMin()) {
+	                    nouvelleTete.position().bouger({ x: scene.dimension().longueur() });
+	                }
+	            }
+	            function ajusterSurY() {
+	                if (nouvelleTete.position().y() > scene.positionYMax()) {
+	                    nouvelleTete.position().bouger({ y: -scene.dimension().longueur() });
+	                }
+	                if (nouvelleTete.position().y() < scene.positionYMin()) {
+	                    nouvelleTete.position().bouger({ y: scene.dimension().longueur() });
+	                }
+	            }
+	            function ajusterSurZ() {
+	                if (nouvelleTete.position().z() > scene.positionZMax()) {
+	                    nouvelleTete.position().bouger({ z: -scene.dimension().longueur() });
+	                }
+	                if (nouvelleTete.position().z() < scene.positionZMin()) {
+	                    nouvelleTete.position().bouger({ z: scene.dimension().longueur() });
+	                }
+	            }
 	        }
 	    }
 	    function retirerLaQueue() {
@@ -409,4 +449,16 @@ function ListeBonus(param) {
             scene = param.scene;
         }
     }
+}
+
+function JeuSnake() {
+    var LONGUEUR_SCENE = 150;
+    var VITESSE_DEFAUT = 400;
+
+    var score = 0;
+    var continuer = true;
+    var scene = new Cube({ dimension: new DimensionCube({ longueur: LONGUEUR_SCENE }) });
+    var snake = new Snake({ scene: scene });
+    var bonus = new ListeBonus({ scene: scene });
+
 }

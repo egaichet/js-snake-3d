@@ -69,7 +69,7 @@ Test(function() {
 	    OnAttend(grosCube.estInclusDansLeCube(petitCube)).DEtreFaux();
 	});
 	
-	Ca('teste qu\'un snake vide est composé de 3 objets juxtaposés', function() {
+	Ca('teste qu\'un nouveau snake est composé de 3 objets juxtaposés', function() {
 		var snake = new Snake();
 		var corpsDuSnake = snake.corps();
 		OnAttend(corpsDuSnake.length).DEtreEgalA(3);
@@ -196,5 +196,22 @@ Test(function() {
 
 	    var snakeNormal = new Snake();
 	    OnAttend(snakeNormal.seMord()).DEtreFaux();
+	});
+
+	Ca('teste qu\'un snake qui sort de la scène retourne dans la scène par la face opposée', function () {
+	    var scene = new Cube({
+	        coordonnees: new Coordonnees(),
+	        dimension: new DimensionCube({ longueur: 50 })
+	    });
+	    var snake = new Snake({ scene: scene });
+	    avancerNFois(3);
+	    var tete = snake.corps()[0];
+	    OnAttend(tete.position().x()).DEtreEgalA(-20);
+        
+	    function avancerNFois(n) {
+	        for (var i = 0; i < n; i++) {
+	            snake.avancer();
+	        }
+	    }
 	});
 });
