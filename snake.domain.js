@@ -387,6 +387,7 @@ function Bonus(param) {
     var bonusCourant = null;
     this.estUnBonus = true;
     this.courant = function () { return bonusCourant; };
+    //TODO repenser le positionnement du bonus
     this.genererUnBonus = function (snake) {
         var nouveauBonus = new Cube({
             coordonnees: genererLesCoordonneesDuBonus(),
@@ -464,13 +465,13 @@ function Bonus(param) {
 
 function JeuSnake() {
     var LONGUEUR_SCENE = 150;
-    var VITESSE_DEFAUT = 400;
+    var VITESSE_DEFAUT = 830;
     var POINTS_PAR_BONUS = 10;
 
     var score = 0;
     var continuer = true;
     var scene = new Cube({ dimension: new DimensionCube({ longueur: LONGUEUR_SCENE }) });
-    var bonus = new ListeBonus({ scene: scene });
+    var bonus = new Bonus({ scene: scene });
     var snake, partieEnCours;
 
     this.estEnCours = function () { return continuer; };
@@ -480,15 +481,23 @@ function JeuSnake() {
         score = 0;
         snake = new Snake({ scene: scene });
         bonus.genererUnBonus(snake);
-        setInterval("jouer()", VITESSE_DEFAUT);
+        setInterval(jouer, VITESSE_DEFAUT);
     };
     this.elementsADessiner = function () {
         return {
             scene: scene,
             bonus: bonus.courant(),
             tete: snake.corps()[0],
-            corps: snake.corps().splice(1)
+            corps: recupererLeCorps()
         };
+
+        function recupererLeCorps() {
+            var corps = new Array();
+            for (var i = 1; i < snake.corps().length; i++) {
+                corps.push(snake.corps()[i]);
+            }
+            return corps;
+        }
     }
 
     function jouer() {

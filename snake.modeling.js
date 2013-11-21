@@ -1,156 +1,156 @@
-$(function () {
-    var container = $('#container');
-    var WIDTH = 640,
-	  HEIGHT = 480;
-    // set some camera attributes
-    var VIEW_ANGLE = 45,
-	  ASPECT = WIDTH / HEIGHT,
-	  NEAR = 0.1,
-	  FAR = 10000;
+var POSITION_MAX_CAMERA = 500;
 
-    var renderer = new THREE.WebGLRenderer();
-    var camera =
-	  new THREE.PerspectiveCamera(
-	    VIEW_ANGLE,
-	    ASPECT,
-	    NEAR,
-	    FAR);
+function Rendu() {
+    var WIDTH = 800;
+	var HEIGHT = 600;
 
-    var scene = new THREE.Scene();
-    scene.add(camera);
-    camera.position.x = 400;
-    camera.lookAt(scene.position);
-    renderer.setSize(WIDTH, HEIGHT);
+	var renderer;
+    var scene;
+    var camera;
+    var lumieres = new Array();
+    var jeu;
+    var objets = new Array();
+    var cubeDeScene;
+    var sommetDuCubeDeScene;
+    var directionPrecedente;
 
-    // attach the render-supplied DOM element
-    container.append(renderer.domElement);
+    this.scene = function () { return scene; };
+    this.camera = function () { return camera };
+    this.sommetScene = function () { return sommetDuCubeDeScene; };
+    this.initialiser = function (conteneur) {
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(WIDTH, HEIGHT);
+        scene = new THREE.Scene();
+        initialiserLaCamera();
+        placerLesLumieres();
+        sommetDuCubeDeScene = new Direction({ axe: Direction.Y, top: true });
 
-    var geometry = new THREE.CubeGeometry(200, 200, 200);
-    for (var i = 0; i < geometry.faces.length; i++) {
-        geometry.faces[i].color.setHex(Math.random() * 0xffffff);
+        conteneur.append(renderer.domElement);
+
+    };
+    this.dessinerLeCubeDeScene = function (cube) {
+        cubeDeScene = dessinerUnCube(cube, [
+            new THREE.MeshBasicMaterial({ color: 0x54FFB8, side: THREE.BackSide }),
+            new THREE.MeshBasicMaterial({ color: 0x8CFFCF, side: THREE.BackSide }),
+            new THREE.MeshBasicMaterial({ color: 0xC2FFE6, side: THREE.BackSide })
+        ]);
+        scene.add(cubeDeScene);
+    };
+    this.animer = function (jeuAAnimer) {
+        jeu = jeuAAnimer;
+        animer();
     }
-    geometry.colorsNeedUpdate = true;
-    var material = new THREE.MeshBasicMaterial({ color: 0xCCFFCC/*, transparent: true, opacity: 1, wireframe: true*/, vertexColors: THREE.FaceColors });
-    var cube = new THREE.Mesh(geometry, material);
-    cube.overdraw = true;
 
-    scene.add(cube);
+    function initialiserLaCamera() {
+        var VIEW_ANGLE = 45;
+        var ASPECT = WIDTH / HEIGHT;
+        var NEAR = 0.1;
+        var FAR = 10000;
 
-    // create a point light
-    var pointLight =
-      new THREE.PointLight(0xFFFFFF);
+        camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+        camera.position.z = POSITION_MAX_CAMERA;
+        camera.lookAt(scene.position);
+        scene.add(camera);
 
-    // set its position
-    pointLight.position.x = 10;
-    pointLight.position.y = 50;
-    pointLight.position.z = 130;
+        directionPrecedente = new Direction({ axe: Direction.X, top: false });
+    }
 
-    // add to the scene
-    scene.add(pointLight);
+    function placerLesLumieres() {
+        var lumiere = new THREE.PointLight(0xFFFFFF);
+        lumiere.position.x = 0;
+        lumiere.position.y = 0;
+        lumiere.position.z = 0;
+        lumieres.push(lumiere);
+        scene.add(lumiere);
+    }
 
-    function animate() {
-        requestAnimationFrame(animate);
-        //cube.rotation.x += 0.01;
-        //cube.rotation.y += 0.02;
+    function animer() {
+        supprimerLesObjetsDeLaScene();
+        //TODO supprimerLesObjets
+        //TODO dessinerLesObjets
+        dessinerLaTete();
+        dessinerLeCorps();
+
+        requestAnimationFrame(animer);
         renderer.render(scene, camera);
+
+        function supprimerLesObjetsDeLaScene() {
+            for (var i = 0; i < objets.length; i++) {
+                scene.remove(objets[i]);
+            }
+            objets = new Array();
+        }
+
+        function dessinerLaTete() {
+            var tete = jeu.elementsADessiner().tete;
+            var teteDessine = dessinerUnCube(tete, [
+                    new THREE.MeshBasicMaterial({ color: 0x4399FA }),
+                    new THREE.MeshBasicMaterial({ color: 0x4399FA }),
+                    new THREE.MeshBasicMaterial({ color: 0x4399FA })
+            ]);
+            scene.add(teteDessine);
+            objets.push(teteDessine);
+        }
+
+        function dessinerLeCorps() {
+            var elementsDuCorps = jeu.elementsADessiner().corps;
+            for (var i = 0; i < elementsDuCorps.length; i++) {
+                dessinerUnElementDuCorps(elementsDuCorps[i]);
+            }
+
+            function dessinerUnElementDuCorps(element) {
+                var elementDessine = dessinerUnCube(element, [
+                    new THREE.MeshBasicMaterial({ color: 0x389CFF }),
+                    new THREE.MeshBasicMaterial({ color: 0x6EB6FF }),
+                    new THREE.MeshBasicMaterial({ color: 0xADD6FF })
+                ]);
+                scene.add(elementDessine);
+                objets.push(elementDessine);
+            }
+        }
+
+        function dessinerLeBonus() {
+            var bonus = jeu.elementsADessiner().bonus;
+            var bonusDessine = dessinerUneSphere(bonus, new THREE.MeshBasicMaterial({ color: 0xFA4343 }));
+            scene.add(bonusDessine);
+            objets.push(bonusDessine);
+        }
     }
 
-    animate();
+    function dessinerUnCube(cubeADessine, materiel) {
+        var longueurDuCube = cubeADessine.dimension().longueur();
+        var gemotrie = new THREE.CubeGeometry(longueurDuCube, longueurDuCube, longueurDuCube);
+        colorierLesFacesDUneGeometrieCubique(gemotrie);
+        var material = new THREE.MeshFaceMaterial(materiel);
+        var cubeDessine = new THREE.Mesh(gemotrie, material);
+        positionnerLObjet(cubeDessine, cubeADessine.position());
+        return cubeDessine;
+    }
 
-    $(document).keydown(function (e) {
-        var reglesDeDeplacementCamera = new RegleDeplacementCamera().genererLesReglesDeDeplacement();
-        for (var i = 0; i < reglesDeDeplacementCamera.length; i++) {
-            if (reglesDeDeplacementCamera[i].estValide(camera)) {
-                reglesDeDeplacementCamera[i].appliquerLaRegle(camera, e.keyCode);
-                break;
-            }
-        }
-        
-    });
+    function dessinerUneSphere(cubeADessine, materiel) {
+        var longueurDuCube = cubeADessine.dimension().longueur();
+        var rayonDeLaSphere = longueurDuCube / 2;
+        var gemotrie = new THREE.SphereGeometry(rayonDeLaSphere);
+        var sphereDessine = new THREE.Mesh(gemotrie, materiel);
+        positionnerLObjet(sphereDessine, cubeADessine.position());
+        return sphereDessine;
+    }
 
-    function RegleDeplacementCamera(param) {
-        this.estValide = function () {
-            return false;
-        };
-        this.appliquerLaRegle = function () {
-        };
-        this.genererLesReglesDeDeplacement = function () {
-            var listeDeRegles = new Array();
-            var regleX = new RegleDeplacementCamera({
-                regle: function (camera) {
-                    return camera.position.x == 400;
-                },
-                application: function (camera, keycode) {
-                    var deplacementXParKeycode = { 37: -400, 38: -400, 39: -400, 40: -400 };
-                    var deplacementYParKeycode = { 37: 0, 38: 400, 39: 0, 40: -400 };
-                    var deplacementZParKeycode = { 37: -400, 38: 0, 39: 400, 40: 0 };
-
-                    camera.position.x += deplacementXParKeycode[keycode];
-                    camera.position.y += deplacementYParKeycode[keycode];
-                    camera.position.z += deplacementZParKeycode[keycode];
-                    camera.lookAt(scene.position);
-                }
-            });
-            var regleXMin = new RegleDeplacementCamera({
-                regle: function (camera) {
-                    return camera.position.x == -400;
-                },
-                application: function (camera, keycode) {
-                    var deplacementXParKeycode = { 37: 400, 38: 400, 39: 400, 40: 400 };
-                    var deplacementYParKeycode = { 37: 0, 38: 400, 39: 0, 40: -400 };
-                    var deplacementZParKeycode = { 37: 400, 38: 0, 39: -400, 40: 0 };
-
-                    camera.position.x += deplacementXParKeycode[keycode];
-                    camera.position.y += deplacementYParKeycode[keycode];
-                    camera.position.z += deplacementZParKeycode[keycode];
-                    camera.lookAt(scene.position);
-                }
-            });
-            var regleXMax = new RegleDeplacementCamera({
-                regle: function (camera) {
-                    return camera.position.y == 400;
-                },
-                application: function (camera, keycode) {
-                    var deplacementXParKeycode = { 37: -400, 38: -400, 39: -400, 40: -400 };
-                    var deplacementYParKeycode = { 37: 0, 38: 400, 39: 0, 40: -400 };
-                    var deplacementZParKeycode = { 37: 400, 38: 0, 39: -400, 40: 0 };
-
-                    camera.position.x += deplacementXParKeycode[keycode];
-                    camera.position.y += deplacementYParKeycode[keycode];
-                    camera.position.z += deplacementZParKeycode[keycode];
-                    camera.lookAt(scene.position);
-                }
-            });
-            var regleXMax = new RegleDeplacementCamera({
-                regle: function (camera) {
-                    return camera.position.x == 400;
-                },
-                application: function (camera, keycode) {
-                    var deplacementXParKeycode = { 37: -400, 38: -400, 39: -400, 40: -400 };
-                    var deplacementYParKeycode = { 37: 0, 38: 400, 39: 0, 40: -400 };
-                    var deplacementZParKeycode = { 37: 400, 38: 0, 39: -400, 40: 0 };
-
-                    camera.position.x += deplacementXParKeycode[keycode];
-                    camera.position.y += deplacementYParKeycode[keycode];
-                    camera.position.z += deplacementZParKeycode[keycode];
-                    camera.lookAt(scene.position);
-                }
-            });
-            listeDeRegles.push(regleXMax);
-            return listeDeRegles;
-        };
-
-        if (param != null) {
-            initialiser(this);
-        }
-
-        function initialiser(regle) {
-            if (param.regle != null) {
-                regle.estValide = param.regle;
-            }
-            if (param.application != null) {
-                regle.appliquerLaRegle = param.application
+    function colorierLesFacesDUneGeometrieCubique(gemotrie) {
+        for (var i = 0; i < gemotrie.faces.length; i++) {
+            if (i < 4) {
+                gemotrie.faces[i].materialIndex = 0;
+            } else if (i < 8) {
+                gemotrie.faces[i].materialIndex = 1;
+            } else {
+                gemotrie.faces[i].materialIndex = 2;
             }
         }
     }
-});
+
+    function positionnerLObjet(objet, position) {
+        objet.position.x = position.x();
+        objet.position.y = position.y();
+        objet.position.z = position.z();
+    }
+}
