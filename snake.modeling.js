@@ -49,6 +49,8 @@ function Rendu() {
 
         camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
         camera.position.z = POSITION_MAX_CAMERA;
+        camera.rotation.order = 'XYZ';
+        //camera.rotation.y += Math.PI / 2;
         camera.lookAt(scene.position);
         scene.add(camera);
 

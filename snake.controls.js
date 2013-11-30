@@ -55,6 +55,10 @@ function RegleDeplacementCamera(param) {
     var deplacementXParKeycode = { 81: 0, 90: 0, 68: 0, 83: 0 };
     var deplacementYParKeycode = { 81: 0, 90: 0, 68: 0, 83: 0 };
     var deplacementZParKeycode = { 81: 0, 90: 0, 68: 0, 83: 0 };
+    var quartDeTour = Math.PI / 2;
+    var rotationXParKeycode = { 81: 0, 90: 0, 68: 0, 83: 0 };
+    var rotationYParKeycode = { 81: 0, 90: 0, 68: 0, 83: 0 };
+    var rotationZParKeycode = { 81: 0, 90: 0, 68: 0, 83: 0 };
 
     this.directionPrecedente = function () { return directionPrecedente; };
     this.estValide = function () {
@@ -79,6 +83,9 @@ function RegleDeplacementCamera(param) {
                 deplacementXParKeycode = { 81: -POSITION_MAX_CAMERA, 90: -POSITION_MAX_CAMERA, 68: -POSITION_MAX_CAMERA, 83: -POSITION_MAX_CAMERA };
                 deplacementYParKeycode = { 81: POSITION_MAX_CAMERA * -coefZTop, 90: POSITION_MAX_CAMERA * coefYTop, 68: POSITION_MAX_CAMERA * coefZTop, 83: POSITION_MAX_CAMERA * -coefYTop };
                 deplacementZParKeycode = { 81: POSITION_MAX_CAMERA * coefYTop, 90: POSITION_MAX_CAMERA * coefZTop, 68: POSITION_MAX_CAMERA * -coefYTop, 83: POSITION_MAX_CAMERA * coefZTop };
+                
+                rotationYParKeycode = { 81: quartDeTour * -valeurAbsolue(coefYTop), 90: quartDeTour * valeurAbsolue(coefZTop), 68: quartDeTour * valeurAbsolue(coefYTop), 83: quartDeTour * coefZTop };
+                rotationZParKeycode = { 81: quartDeTour * -coefZTop, 90: quartDeTour * -coefYTop, 68: quartDeTour * coefZTop, 83: quartDeTour * -coefYTop };
 
                 deplacerLaCamera(rendu, keycode);
             }
@@ -97,7 +104,10 @@ function RegleDeplacementCamera(param) {
 
                 deplacementXParKeycode = { 81: POSITION_MAX_CAMERA, 90: POSITION_MAX_CAMERA, 68: POSITION_MAX_CAMERA, 83: POSITION_MAX_CAMERA };
                 deplacementYParKeycode = { 81: POSITION_MAX_CAMERA * coefZTop, 90: POSITION_MAX_CAMERA * coefYTop, 68: POSITION_MAX_CAMERA * -coefZTop, 83: POSITION_MAX_CAMERA * -coefYTop };
-                deplacementZParKeycode = { 81: POSITION_MAX_CAMERA * coefYTop, 90: POSITION_MAX_CAMERA * coefZTop, 68: POSITION_MAX_CAMERA * coefYTop, 83: -POSITION_MAX_CAMERA * coefZTop };
+                deplacementZParKeycode = { 81: POSITION_MAX_CAMERA * -coefYTop, 90: POSITION_MAX_CAMERA * coefZTop, 68: POSITION_MAX_CAMERA * coefYTop, 83: -POSITION_MAX_CAMERA * coefZTop };
+                
+                rotationYParKeycode = { 81: quartDeTour * -valeurAbsolue(coefYTop), 90: quartDeTour * coefZTop, 68: quartDeTour * valeurAbsolue(coefYTop), 83: quartDeTour * -coefZTop };
+                rotationZParKeycode = { 81: quartDeTour * valeurAbsolue(coefZTop), 90: quartDeTour * -coefYTop, 68: quartDeTour * -valeurAbsolue(coefZTop), 83: quartDeTour * coefYTop };
 
                 deplacerLaCamera(rendu, keycode);
             }
@@ -118,6 +128,9 @@ function RegleDeplacementCamera(param) {
                 deplacementYParKeycode = { 81: -POSITION_MAX_CAMERA, 90: -POSITION_MAX_CAMERA, 68: -POSITION_MAX_CAMERA, 83: -POSITION_MAX_CAMERA };
                 deplacementZParKeycode = { 81: POSITION_MAX_CAMERA * -coefXTop, 90: POSITION_MAX_CAMERA * coefZTop, 68: POSITION_MAX_CAMERA * coefXTop, 83: POSITION_MAX_CAMERA * -coefZTop };
 
+                rotationXParKeycode = { 81: quartDeTour * valeurAbsolue(coefXTop), 90: quartDeTour * coefZTop, 68: quartDeTour * -valeurAbsolue(coefXTop), 83: quartDeTour * -coefZTop };
+                rotationZParKeycode = { 81: quartDeTour * valeurAbsolue(coefZTop), 90: quartDeTour * -coefXTop, 68: quartDeTour * -valeurAbsolue(coefZTop), 83: quartDeTour * coefXTop };
+
                 deplacerLaCamera(rendu, keycode);
             }
         });
@@ -136,6 +149,9 @@ function RegleDeplacementCamera(param) {
                 deplacementXParKeycode = { 81: POSITION_MAX_CAMERA * -coefZTop, 90: POSITION_MAX_CAMERA * coefXTop, 68: POSITION_MAX_CAMERA * coefZTop, 83: POSITION_MAX_CAMERA * -coefXTop };
                 deplacementYParKeycode = { 81: POSITION_MAX_CAMERA, 90: POSITION_MAX_CAMERA, 68: POSITION_MAX_CAMERA, 83: POSITION_MAX_CAMERA };
                 deplacementZParKeycode = { 81: POSITION_MAX_CAMERA * coefXTop, 90: POSITION_MAX_CAMERA * coefZTop, 68: POSITION_MAX_CAMERA * -coefXTop, 83: POSITION_MAX_CAMERA * -coefZTop };
+
+                rotationXParKeycode = { 81: quartDeTour * -valeurAbsolue(coefXTop), 90: quartDeTour * -coefZTop, 68: quartDeTour * valeurAbsolue(coefXTop), 83: quartDeTour * coefZTop };
+                rotationZParKeycode = { 81: quartDeTour * -coefZTop, 90: quartDeTour * coefXTop, 68: quartDeTour * coefZTop, 83: quartDeTour * -coefXTop };
 
                 deplacerLaCamera(rendu, keycode);
             }
@@ -156,6 +172,9 @@ function RegleDeplacementCamera(param) {
                 deplacementYParKeycode = { 81: POSITION_MAX_CAMERA * coefXTop, 90: POSITION_MAX_CAMERA * coefYTop, 68: POSITION_MAX_CAMERA * -coefXTop, 83: POSITION_MAX_CAMERA * -coefYTop };
                 deplacementZParKeycode = { 81: -POSITION_MAX_CAMERA, 90: -POSITION_MAX_CAMERA, 68: -POSITION_MAX_CAMERA, 83: -POSITION_MAX_CAMERA };
 
+                rotationXParKeycode = { 81: quartDeTour * -valeurAbsolue(coefXTop), 90: quartDeTour * -coefYTop, 68: quartDeTour * valeurAbsolue(coefXTop), 83: quartDeTour * coefYTop };
+                rotationYParKeycode = { 81: quartDeTour * -valeurAbsolue(coefYTop), 90: quartDeTour * -coefXTop, 68: quartDeTour * valeurAbsolue(coefYTop), 83: quartDeTour * coefXTop };
+
                 deplacerLaCamera(rendu, keycode);
             }
         });
@@ -174,6 +193,9 @@ function RegleDeplacementCamera(param) {
                 deplacementXParKeycode = { 81: POSITION_MAX_CAMERA * coefYTop, 90: POSITION_MAX_CAMERA * coefXTop, 68: POSITION_MAX_CAMERA * -coefYTop, 83: POSITION_MAX_CAMERA * -coefXTop };
                 deplacementYParKeycode = { 81: POSITION_MAX_CAMERA * -coefXTop, 90: POSITION_MAX_CAMERA * coefYTop, 68: POSITION_MAX_CAMERA * coefXTop, 83: POSITION_MAX_CAMERA * -coefYTop };
                 deplacementZParKeycode = { 81: POSITION_MAX_CAMERA, 90: POSITION_MAX_CAMERA, 68: POSITION_MAX_CAMERA, 83: POSITION_MAX_CAMERA };
+
+                rotationXParKeycode = { 81: quartDeTour * -valeurAbsolue(coefXTop), 90: quartDeTour * coefYTop, 68: quartDeTour * valeurAbsolue(coefXTop), 83: quartDeTour * -coefYTop };
+                rotationYParKeycode = { 81: quartDeTour * -valeurAbsolue(coefYTop), 90: quartDeTour * -coefXTop, 68: quartDeTour * valeurAbsolue(coefYTop), 83: quartDeTour * coefXTop };
 
                 deplacerLaCamera(rendu, keycode);
             }
@@ -204,11 +226,42 @@ function RegleDeplacementCamera(param) {
     }
     function deplacerLaCamera(rendu, keycode) {
         var camera = rendu.camera();
-        camera.position.x += deplacementXParKeycode[keycode];
-        camera.position.y += deplacementYParKeycode[keycode];
-        camera.position.z += deplacementZParKeycode[keycode];
-        camera.rotation.x -= Math.PI / 2; // TODO : calculer la rotation de la camera puis animer la camera
-        camera.lookAt(rendu.scene().position);
+        var animationDeplacement;
+        var deplacementIteratifX = deplacementXParKeycode[keycode] / 10;
+        var deplacementIteratifY = deplacementYParKeycode[keycode] / 10;
+        var deplacementIteratifZ = deplacementZParKeycode[keycode] / 10;
+        var iteration = 0;
+        //camera.position.x += deplacementXParKeycode[keycode];
+        //camera.position.y += deplacementYParKeycode[keycode];
+        //camera.position.z += deplacementZParKeycode[keycode];
+        animationDeplacement = setInterval(deplacer, 50);
+        //console.log(camera.position);
+        //camera.lookAt(rendu.scene().position);
+        //camera.rotation.order = 'XYZ';
+        //camera.rotation.x += rotationXParKeycode[keycode];
+        //camera.rotation.order = 'YZX';
+        //camera.rotation.y += rotationYParKeycode[keycode];
+        //camera.rotation.order = 'ZXY';
+        //camera.rotation.z += rotationZParKeycode[keycode];
+        //TODO : simplifier le code pour avoir juste la rotation autour de Y
+        function deplacer() {
+            iteration++;
+            camera.position.x += deplacementIteratifX;
+            camera.position.y += deplacementIteratifY;
+            camera.position.z += deplacementIteratifZ;
+            camera.lookAt(rendu.scene().position);
+            console.log(camera.position);
+            if (iteration == 10) {
+                clearInterval(animationDeplacement);
+            }
+        }
+    }
+
+    function valeurAbsolue(valeur) {
+        if (valeur < 0) {
+            return valeur * -1;
+        }
+        return valeur;
     }
 }
 
