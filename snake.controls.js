@@ -4,34 +4,6 @@ function Direction(param) {
 
     this.axe = function () { return axe; };
     this.top = function () { return top; };
-    this.modifierLaDirection = function (direction) {
-        if (direction != null) {
-            if (direction.axe != null) {
-                axe = direction.axe;
-            }
-            if (direction.top != null) {
-                top = direction.top;
-            }
-        }
-    }
-    this.coeficientX = function () {
-        if (axe === Direction.X) {
-            return top ? 1 : -1;
-        }
-        return 0;
-    };
-    this.coeficientY = function () {
-        if (axe === Direction.Y) {
-            return top ? 1 : -1;
-        }
-        return 0;
-    };
-    this.coeficientZ = function () {
-        if (axe === Direction.Z) {
-            return top ? 1 : -1;
-        }
-        return 0;
-    };
 
     if (param != null) {
         initialiser();
@@ -51,16 +23,9 @@ Direction.Y = 'y';
 Direction.Z = 'z';
 
 function RegleDeplacementCamera(param) {
-    var directionPrecedente;
-    var deplacementXParKeycode = { 81: 0, 90: 0, 68: 0, 83: 0 };
-    var deplacementYParKeycode = { 81: 0, 90: 0, 68: 0, 83: 0 };
-    var deplacementZParKeycode = { 81: 0, 90: 0, 68: 0, 83: 0 };
-    var quartDeTour = Math.PI / 2;
-    var rotationXParKeycode = { 81: 0, 90: 0, 68: 0, 83: 0 };
-    var rotationYParKeycode = { 81: 0, 90: 0, 68: 0, 83: 0 };
-    var rotationZParKeycode = { 81: 0, 90: 0, 68: 0, 83: 0 };
+    var deplacementXParKeycode = { 81: 0, 68: 0};
+    var deplacementZParKeycode = { 81: 0, 68: 0};
 
-    this.directionPrecedente = function () { return directionPrecedente; };
     this.estValide = function () {
         return false;
     };
@@ -73,20 +38,8 @@ function RegleDeplacementCamera(param) {
                 return rendu.camera().position.x == POSITION_MAX_CAMERA;
             },
             application: function (rendu, keycode) {
-                directionPrecedente = new Direction({ axe: Direction.X, top: true });
-                var coefYTop = rendu.sommetScene().coeficientY();
-                var coefZTop = rendu.sommetScene().coeficientZ();
-                if (changeDeSommet(keycode)) {
-                    rendu.sommetScene().modifierLaDirection({ axe: Direction.X, top: keycode === 83 });
-                }
-
-                deplacementXParKeycode = { 81: -POSITION_MAX_CAMERA, 90: -POSITION_MAX_CAMERA, 68: -POSITION_MAX_CAMERA, 83: -POSITION_MAX_CAMERA };
-                deplacementYParKeycode = { 81: POSITION_MAX_CAMERA * -coefZTop, 90: POSITION_MAX_CAMERA * coefYTop, 68: POSITION_MAX_CAMERA * coefZTop, 83: POSITION_MAX_CAMERA * -coefYTop };
-                deplacementZParKeycode = { 81: POSITION_MAX_CAMERA * coefYTop, 90: POSITION_MAX_CAMERA * coefZTop, 68: POSITION_MAX_CAMERA * -coefYTop, 83: POSITION_MAX_CAMERA * coefZTop };
-                
-                rotationYParKeycode = { 81: quartDeTour * -valeurAbsolue(coefYTop), 90: quartDeTour * valeurAbsolue(coefZTop), 68: quartDeTour * valeurAbsolue(coefYTop), 83: quartDeTour * coefZTop };
-                rotationZParKeycode = { 81: quartDeTour * -coefZTop, 90: quartDeTour * -coefYTop, 68: quartDeTour * coefZTop, 83: quartDeTour * -coefYTop };
-
+                deplacementXParKeycode = { 81: -POSITION_MAX_CAMERA, 68: -POSITION_MAX_CAMERA };
+                deplacementZParKeycode = { 81: POSITION_MAX_CAMERA, 68: -POSITION_MAX_CAMERA  };
                 deplacerLaCamera(rendu, keycode);
             }
         });
@@ -95,64 +48,8 @@ function RegleDeplacementCamera(param) {
                 return rendu.camera().position.x == -POSITION_MAX_CAMERA;
             },
             application: function (rendu, keycode) {
-                directionPrecedente = new Direction({ axe: Direction.X, top: false });
-                var coefYTop = rendu.sommetScene().coeficientY();
-                var coefZTop = rendu.sommetScene().coeficientZ();
-                if (changeDeSommet(keycode)) {
-                    rendu.sommetScene().modifierLaDirection({ axe: Direction.X, top: keycode === 90 });
-                }
-
-                deplacementXParKeycode = { 81: POSITION_MAX_CAMERA, 90: POSITION_MAX_CAMERA, 68: POSITION_MAX_CAMERA, 83: POSITION_MAX_CAMERA };
-                deplacementYParKeycode = { 81: POSITION_MAX_CAMERA * coefZTop, 90: POSITION_MAX_CAMERA * coefYTop, 68: POSITION_MAX_CAMERA * -coefZTop, 83: POSITION_MAX_CAMERA * -coefYTop };
-                deplacementZParKeycode = { 81: POSITION_MAX_CAMERA * -coefYTop, 90: POSITION_MAX_CAMERA * coefZTop, 68: POSITION_MAX_CAMERA * coefYTop, 83: -POSITION_MAX_CAMERA * coefZTop };
-                
-                rotationYParKeycode = { 81: quartDeTour * -valeurAbsolue(coefYTop), 90: quartDeTour * coefZTop, 68: quartDeTour * valeurAbsolue(coefYTop), 83: quartDeTour * -coefZTop };
-                rotationZParKeycode = { 81: quartDeTour * valeurAbsolue(coefZTop), 90: quartDeTour * -coefYTop, 68: quartDeTour * -valeurAbsolue(coefZTop), 83: quartDeTour * coefYTop };
-
-                deplacerLaCamera(rendu, keycode);
-            }
-        });
-        var regleYMax = new RegleDeplacementCamera({
-            regle: function (rendu) {
-                return rendu.camera().position.y == POSITION_MAX_CAMERA;
-            },
-            application: function (rendu, keycode) {
-                directionPrecedente = new Direction({ axe: Direction.Y, top: true });
-                var coefXTop = rendu.sommetScene().coeficientX();
-                var coefZTop = rendu.sommetScene().coeficientZ();
-                if (changeDeSommet(keycode)) {
-                    rendu.sommetScene().modifierLaDirection({ axe: Direction.Y, top: keycode === 83 });
-                }
-
-                deplacementXParKeycode = { 81: POSITION_MAX_CAMERA * coefZTop, 90: POSITION_MAX_CAMERA * coefXTop, 68: POSITION_MAX_CAMERA * -coefZTop, 83: POSITION_MAX_CAMERA * -coefXTop };
-                deplacementYParKeycode = { 81: -POSITION_MAX_CAMERA, 90: -POSITION_MAX_CAMERA, 68: -POSITION_MAX_CAMERA, 83: -POSITION_MAX_CAMERA };
-                deplacementZParKeycode = { 81: POSITION_MAX_CAMERA * -coefXTop, 90: POSITION_MAX_CAMERA * coefZTop, 68: POSITION_MAX_CAMERA * coefXTop, 83: POSITION_MAX_CAMERA * -coefZTop };
-
-                rotationXParKeycode = { 81: quartDeTour * valeurAbsolue(coefXTop), 90: quartDeTour * coefZTop, 68: quartDeTour * -valeurAbsolue(coefXTop), 83: quartDeTour * -coefZTop };
-                rotationZParKeycode = { 81: quartDeTour * valeurAbsolue(coefZTop), 90: quartDeTour * -coefXTop, 68: quartDeTour * -valeurAbsolue(coefZTop), 83: quartDeTour * coefXTop };
-
-                deplacerLaCamera(rendu, keycode);
-            }
-        });
-        var regleYMin = new RegleDeplacementCamera({
-            regle: function (rendu) {
-                return rendu.camera().position.y == -POSITION_MAX_CAMERA;
-            },
-            application: function (rendu, keycode) {
-                directionPrecedente = new Direction({ axe: Direction.Y, top: false });
-                var coefXTop = rendu.sommetScene().coeficientX();
-                var coefZTop = rendu.sommetScene().coeficientZ();
-                if (changeDeSommet(keycode)) {
-                    rendu.sommetScene().modifierLaDirection({ axe: Direction.Y, top: keycode === 90 });
-                }
-
-                deplacementXParKeycode = { 81: POSITION_MAX_CAMERA * -coefZTop, 90: POSITION_MAX_CAMERA * coefXTop, 68: POSITION_MAX_CAMERA * coefZTop, 83: POSITION_MAX_CAMERA * -coefXTop };
-                deplacementYParKeycode = { 81: POSITION_MAX_CAMERA, 90: POSITION_MAX_CAMERA, 68: POSITION_MAX_CAMERA, 83: POSITION_MAX_CAMERA };
-                deplacementZParKeycode = { 81: POSITION_MAX_CAMERA * coefXTop, 90: POSITION_MAX_CAMERA * coefZTop, 68: POSITION_MAX_CAMERA * -coefXTop, 83: POSITION_MAX_CAMERA * -coefZTop };
-
-                rotationXParKeycode = { 81: quartDeTour * -valeurAbsolue(coefXTop), 90: quartDeTour * -coefZTop, 68: quartDeTour * valeurAbsolue(coefXTop), 83: quartDeTour * coefZTop };
-                rotationZParKeycode = { 81: quartDeTour * -coefZTop, 90: quartDeTour * coefXTop, 68: quartDeTour * coefZTop, 83: quartDeTour * -coefXTop };
-
+                deplacementXParKeycode = { 81: POSITION_MAX_CAMERA, 68: POSITION_MAX_CAMERA };
+                deplacementZParKeycode = { 81: -POSITION_MAX_CAMERA, 68: POSITION_MAX_CAMERA  };
                 deplacerLaCamera(rendu, keycode);
             }
         });
@@ -161,20 +58,8 @@ function RegleDeplacementCamera(param) {
                 return rendu.camera().position.z == POSITION_MAX_CAMERA;
             },
             application: function (rendu, keycode) {
-                directionPrecedente = new Direction({ axe: Direction.Z, top: true });
-                var coefXTop = rendu.sommetScene().coeficientX();
-                var coefYTop = rendu.sommetScene().coeficientY();
-                if (changeDeSommet(keycode)) {
-                    rendu.sommetScene().modifierLaDirection({ axe: Direction.Z, top: keycode === 83 });
-                }
-
-                deplacementXParKeycode = { 81: POSITION_MAX_CAMERA * -coefYTop, 90: POSITION_MAX_CAMERA * coefXTop, 68: POSITION_MAX_CAMERA * coefYTop, 83: POSITION_MAX_CAMERA * -coefXTop };
-                deplacementYParKeycode = { 81: POSITION_MAX_CAMERA * coefXTop, 90: POSITION_MAX_CAMERA * coefYTop, 68: POSITION_MAX_CAMERA * -coefXTop, 83: POSITION_MAX_CAMERA * -coefYTop };
-                deplacementZParKeycode = { 81: -POSITION_MAX_CAMERA, 90: -POSITION_MAX_CAMERA, 68: -POSITION_MAX_CAMERA, 83: -POSITION_MAX_CAMERA };
-
-                rotationXParKeycode = { 81: quartDeTour * -valeurAbsolue(coefXTop), 90: quartDeTour * -coefYTop, 68: quartDeTour * valeurAbsolue(coefXTop), 83: quartDeTour * coefYTop };
-                rotationYParKeycode = { 81: quartDeTour * -valeurAbsolue(coefYTop), 90: quartDeTour * -coefXTop, 68: quartDeTour * valeurAbsolue(coefYTop), 83: quartDeTour * coefXTop };
-
+                deplacementXParKeycode = { 81: -POSITION_MAX_CAMERA, 68: POSITION_MAX_CAMERA };
+                deplacementZParKeycode = { 81: -POSITION_MAX_CAMERA, 68: -POSITION_MAX_CAMERA  };
                 deplacerLaCamera(rendu, keycode);
             }
         });
@@ -183,27 +68,13 @@ function RegleDeplacementCamera(param) {
                 return rendu.camera().position.z == -POSITION_MAX_CAMERA;
             },
             application: function (rendu, keycode) {
-                directionPrecedente = new Direction({ axe: Direction.Z, top: false });
-                var coefXTop = rendu.sommetScene().coeficientX();
-                var coefYTop = rendu.sommetScene().coeficientY();
-                if (changeDeSommet(keycode)) {
-                    rendu.sommetScene().modifierLaDirection({ axe: Direction.Z, top: keycode === 90 });
-                }
-
-                deplacementXParKeycode = { 81: POSITION_MAX_CAMERA * coefYTop, 90: POSITION_MAX_CAMERA * coefXTop, 68: POSITION_MAX_CAMERA * -coefYTop, 83: POSITION_MAX_CAMERA * -coefXTop };
-                deplacementYParKeycode = { 81: POSITION_MAX_CAMERA * -coefXTop, 90: POSITION_MAX_CAMERA * coefYTop, 68: POSITION_MAX_CAMERA * coefXTop, 83: POSITION_MAX_CAMERA * -coefYTop };
-                deplacementZParKeycode = { 81: POSITION_MAX_CAMERA, 90: POSITION_MAX_CAMERA, 68: POSITION_MAX_CAMERA, 83: POSITION_MAX_CAMERA };
-
-                rotationXParKeycode = { 81: quartDeTour * -valeurAbsolue(coefXTop), 90: quartDeTour * coefYTop, 68: quartDeTour * valeurAbsolue(coefXTop), 83: quartDeTour * -coefYTop };
-                rotationYParKeycode = { 81: quartDeTour * -valeurAbsolue(coefYTop), 90: quartDeTour * -coefXTop, 68: quartDeTour * valeurAbsolue(coefYTop), 83: quartDeTour * coefXTop };
-
+                deplacementXParKeycode = { 81: POSITION_MAX_CAMERA, 68: -POSITION_MAX_CAMERA };
+                deplacementZParKeycode = { 81: POSITION_MAX_CAMERA, 68: POSITION_MAX_CAMERA  };
                 deplacerLaCamera(rendu, keycode);
             }
         });
         listeDeRegles.push(regleXMax);
         listeDeRegles.push(regleXMin);
-        listeDeRegles.push(regleYMax);
-        listeDeRegles.push(regleYMin);
         listeDeRegles.push(regleZMax);
         listeDeRegles.push(regleZMin);
         return listeDeRegles;
@@ -221,54 +92,130 @@ function RegleDeplacementCamera(param) {
             regle.appliquerLaRegle = param.application
         }
     }
-    function changeDeSommet(keycode) {
-        return keycode === 90 || keycode === 83;
-    }
     function deplacerLaCamera(rendu, keycode) {
         var camera = rendu.camera();
         var animationDeplacement;
-        var deplacementIteratifX = deplacementXParKeycode[keycode] / 10;
-        var deplacementIteratifY = deplacementYParKeycode[keycode] / 10;
-        var deplacementIteratifZ = deplacementZParKeycode[keycode] / 10;
-        var iteration = 0;
-        //camera.position.x += deplacementXParKeycode[keycode];
-        //camera.position.y += deplacementYParKeycode[keycode];
-        //camera.position.z += deplacementZParKeycode[keycode];
+        var iterationsAFaire = 10;
+        var iterationsFaites = 0;
+        var deplacementIteratifX = deplacementXParKeycode[keycode] / iterationsAFaire;
+        var deplacementIteratifZ = deplacementZParKeycode[keycode] / iterationsAFaire;
         animationDeplacement = setInterval(deplacer, 50);
-        //console.log(camera.position);
-        //camera.lookAt(rendu.scene().position);
-        //camera.rotation.order = 'XYZ';
-        //camera.rotation.x += rotationXParKeycode[keycode];
-        //camera.rotation.order = 'YZX';
-        //camera.rotation.y += rotationYParKeycode[keycode];
-        //camera.rotation.order = 'ZXY';
-        //camera.rotation.z += rotationZParKeycode[keycode];
-        //TODO : simplifier le code pour avoir juste la rotation autour de Y
         function deplacer() {
-            iteration++;
+            iterationsFaites++;
             camera.position.x += deplacementIteratifX;
-            camera.position.y += deplacementIteratifY;
             camera.position.z += deplacementIteratifZ;
             camera.lookAt(rendu.scene().position);
-            console.log(camera.position);
-            if (iteration == 10) {
+            if (iterationsFaites == iterationsAFaire) {
                 clearInterval(animationDeplacement);
             }
         }
     }
-
-    function valeurAbsolue(valeur) {
-        if (valeur < 0) {
-            return valeur * -1;
-        }
-        return valeur;
-    }
 }
 
-function ControleSnake() {
-    var directionPrecedente = new Direction({ axe: Direction.X, top: false });
+function RegleDeplacementSnake(param) {
+    var deplacementParKeyCode = {83: null, 90: null, 37: null, 38: null, 39: null, 40: null};
+    this.estValide = function () {
+        return false;
+    };
+    this.appliquerLaRegle = function() {
 
-    this.initialiserLeDeplacementDeLaCamera = function (rendu) {
+    };
+    this.genererLesReglesDeDeplacement = function() {
+        var listeDeRegles = new Array();
+        var regleXMax = new RegleDeplacementSnake({
+            regle: function(rendu) {
+                return rendu.camera().position.x == POSITION_MAX_CAMERA;
+            },
+            application: function(jeu, keycode) {
+                 deplacementParKeyCode = {
+                    83: new DirectionSnake({axe: Direction.X, enAvant: true}),
+                    90: new DirectionSnake({axe: Direction.X, enAvant: false}),
+                    37: new DirectionSnake({axe: Direction.Z, enAvant: true}),
+                    38: new DirectionSnake({axe: Direction.Y, enAvant: true}),
+                    39: new DirectionSnake({axe: Direction.Z, enAvant: false}),
+                    40: new DirectionSnake({axe: Direction.Y, enAvant: false})
+                 };
+                 deplacerLeSnake(jeu, keycode);
+              }
+        });
+        var regleXMin = new RegleDeplacementSnake({
+            regle: function(rendu) {
+                return rendu.camera().position.x == -POSITION_MAX_CAMERA;
+            },
+            application: function(jeu, keycode) {
+                deplacementParKeyCode = {
+                    83: new DirectionSnake({axe: Direction.X, enAvant: false}),
+                    90: new DirectionSnake({axe: Direction.X, enAvant: true}),
+                    37: new DirectionSnake({axe: Direction.Z, enAvant: false}),
+                    38: new DirectionSnake({axe: Direction.Y, enAvant: true}),
+                    39: new DirectionSnake({axe: Direction.Z, enAvant: true}),
+                    40: new DirectionSnake({axe: Direction.Y, enAvant: false})
+                };
+                deplacerLeSnake(jeu, keycode);
+            }
+        });
+        var regleZMax = new RegleDeplacementSnake({
+            regle: function(rendu) {
+                return rendu.camera().position.z == POSITION_MAX_CAMERA;
+            },
+            application: function(jeu, keycode) {
+                deplacementParKeyCode = {
+                    83: new DirectionSnake({axe: Direction.Z, enAvant: true}),
+                    90: new DirectionSnake({axe: Direction.Z, enAvant: false}),
+                    37: new DirectionSnake({axe: Direction.X, enAvant: false}),
+                    38: new DirectionSnake({axe: Direction.Y, enAvant: true}),
+                    39: new DirectionSnake({axe: Direction.X, enAvant: true}),
+                    40: new DirectionSnake({axe: Direction.Y, enAvant: false})
+                };
+                deplacerLeSnake(jeu, keycode);
+            }
+        });
+        var regleZMin = new RegleDeplacementSnake({
+            regle: function(rendu) {
+                return rendu.camera().position.z == -POSITION_MAX_CAMERA;
+            },
+            application: function(jeu, keycode) {
+                deplacementParKeyCode = {
+                    83: new DirectionSnake({axe: Direction.Z, enAvant: false}),
+                    90: new DirectionSnake({axe: Direction.Z, enAvant: true}),
+                    37: new DirectionSnake({axe: Direction.X, enAvant: true}),
+                    38: new DirectionSnake({axe: Direction.Y, enAvant: true}),
+                    39: new DirectionSnake({axe: Direction.X, enAvant: false}),
+                    40: new DirectionSnake({axe: Direction.Y, enAvant: false})
+                };
+                deplacerLeSnake(jeu, keycode);
+            }
+        });
+        listeDeRegles.push(regleXMax);
+        listeDeRegles.push(regleXMin);
+        listeDeRegles.push(regleZMax);
+        listeDeRegles.push(regleZMin);
+        return listeDeRegles;
+    };
+
+    if (param != null) {
+        initialiser(this);
+    }
+
+    function initialiser(regle) {
+        if (param.regle != null) {
+            regle.estValide = param.regle;
+        }
+        if (param.application != null) {
+            regle.appliquerLaRegle = param.application
+        }
+    }
+    function deplacerLeSnake(jeu, keycode) {
+        jeu.changerLaDirectionDuSnake(deplacementParKeyCode[keycode]);
+    }
+
+}
+
+function ControleSnake(jeu, rendu) {
+    var jeu = jeu;
+    var rendu = rendu;
+
+    this.initialiserLeDeplacementDeLaCamera = function () {
         $(document).keydown(function (e) {
             if (estUnDeplacementDeCamera(e.keyCode)) {
                 deplacerLaCamera(e.keyCode);
@@ -276,7 +223,7 @@ function ControleSnake() {
         });
 
         function estUnDeplacementDeCamera(keycode) {
-            return keycode == 81 || keycode == 90 || keycode == 68 || keycode == 83;
+            return keycode == 81 || keycode == 68;
         }
 
         function deplacerLaCamera(keycode) {
@@ -290,5 +237,26 @@ function ControleSnake() {
         }
     }
 
-    this.initialiserLeDeplacementDuSnake; //TODO cette fonction
+    this.initialiserLeDeplacementDuSnake = function () {
+        $(document).keydown(function(e) {
+            if(estUnDeplacementDuSnake(e.keyCode)) {
+                deplacerLeSnake(e.keyCode);
+            }
+        });
+
+        function estUnDeplacementDuSnake(keycode) {
+            return keycode == 83
+                || keycode == 90
+                || keycode >= 37 && keycode <= 40;
+        }
+        function deplacerLeSnake(keycode) {
+            var reglesDeDeplacementSnake = new RegleDeplacementSnake().genererLesReglesDeDeplacement();
+            for(var i = 0; i < reglesDeDeplacementSnake.length; i++) {
+                if(reglesDeDeplacementSnake[i].estValide(rendu)) {
+                    reglesDeDeplacementSnake[i].appliquerLaRegle(jeu, keycode);
+                    break;
+                }
+            }
+        }
+    }
 }

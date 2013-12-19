@@ -1,5 +1,5 @@
 $(function () {
-    var jeu = new JeuSnake();
+    var jeu = new JeuSnake({score: $('#score'), annonce: $('#annonce')});
     jeu.lancerUnePartie();
 
     var rendu = new Rendu();
@@ -7,6 +7,8 @@ $(function () {
     rendu.dessinerLeCubeDeScene(jeu.elementsADessiner().scene);
     rendu.animer(jeu);
 
-    var controles = new ControleSnake();
-    controles.initialiserLeDeplacementDeLaCamera(rendu);
+    var controles = new ControleSnake(jeu, rendu);
+    controles.initialiserLeDeplacementDeLaCamera();
+    controles.initialiserLeDeplacementDuSnake();
+
 });

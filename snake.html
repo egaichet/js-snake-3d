@@ -9,16 +9,33 @@
 		<script src="snake.modeling.js"></script>
 		<script src="snake.js"></script>
         <style>
+            body {
+                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            }
+            div#score {
+                display: inline-block;
+                vertical-align: top;
+                width: 30%;
+            }
             div#container {
-                margin-left: auto;
-                margin-right: auto;
+                display: inline-block;
+                vertical-align: top;
                 width: 50%;
                 min-width: 450px;
+            }
+            div#annonce {
+                display: none;
+                margin-left: auto;
+                margin-right: auto;
             }
         </style>
 	</head>
 	<body>
+        <div id="score">
+        </div>
 		<div id="container">
+            <div id="annonce">
+            </div>
 		</div>
 	</body>
 </html>

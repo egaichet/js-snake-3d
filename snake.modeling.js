@@ -1,4 +1,4 @@
-var POSITION_MAX_CAMERA = 500;
+var POSITION_MAX_CAMERA = 400;
 
 function Rendu() {
     var WIDTH = 800;
@@ -7,12 +7,20 @@ function Rendu() {
 	var renderer;
     var scene;
     var camera;
-    var lumieres = new Array();
     var jeu;
     var objets = new Array();
     var cubeDeScene;
     var sommetDuCubeDeScene;
     var directionPrecedente;
+
+    var texturePomme = THREE.ImageUtils.loadTexture('texture-pomme.jpg', new THREE.UVMapping());
+    texturePomme.wrapS = texturePomme.wrapT = THREE.ClampToEdgeWrapping;
+    var textureEcaille = THREE.ImageUtils.loadTexture('texture-ecaille.jpg', new THREE.UVMapping());
+    textureEcaille.wrapS = textureEcaille.wrapT = THREE.ClampToEdgeWrapping;
+    var textureParois = THREE.ImageUtils.loadTexture('texture-parois.jpg', new THREE.UVMapping());
+    textureEcaille.wrapS = textureEcaille.wrapT = THREE.ClampToEdgeWrapping;
+    var texturePlaque = THREE.ImageUtils.loadTexture('texture-plaque.jpg', new THREE.UVMapping());
+    textureEcaille.wrapS = textureEcaille.wrapT = THREE.ClampToEdgeWrapping;
 
     this.scene = function () { return scene; };
     this.camera = function () { return camera };
@@ -30,9 +38,9 @@ function Rendu() {
     };
     this.dessinerLeCubeDeScene = function (cube) {
         cubeDeScene = dessinerUnCube(cube, [
-            new THREE.MeshBasicMaterial({ color: 0x54FFB8, side: THREE.BackSide }),
-            new THREE.MeshBasicMaterial({ color: 0x8CFFCF, side: THREE.BackSide }),
-            new THREE.MeshBasicMaterial({ color: 0xC2FFE6, side: THREE.BackSide })
+            new THREE.MeshLambertMaterial({ color: 0x54FFB8, side: THREE.BackSide, map: textureParois }),
+            new THREE.MeshLambertMaterial({ color: 0x8CFFCF, side: THREE.BackSide, map: texturePlaque }),
+            new THREE.MeshLambertMaterial({ color: 0xC2FFE6, side: THREE.BackSide, map: textureParois })
         ]);
         scene.add(cubeDeScene);
     };
@@ -49,8 +57,6 @@ function Rendu() {
 
         camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
         camera.position.z = POSITION_MAX_CAMERA;
-        camera.rotation.order = 'XYZ';
-        //camera.rotation.y += Math.PI / 2;
         camera.lookAt(scene.position);
         scene.add(camera);
 
@@ -58,20 +64,19 @@ function Rendu() {
     }
 
     function placerLesLumieres() {
-        var lumiere = new THREE.PointLight(0xFFFFFF);
-        lumiere.position.x = 0;
-        lumiere.position.y = 0;
-        lumiere.position.z = 0;
-        lumieres.push(lumiere);
-        scene.add(lumiere);
+        var pointDeLumiere = new THREE.PointLight(0xFFFFFF);
+        scene.add(pointDeLumiere);
+
+        var lumiereAmbiante = new THREE.AmbientLight(0xFAFAFA);
+        scene.add(lumiereAmbiante);
     }
 
     function animer() {
         supprimerLesObjetsDeLaScene();
-        //TODO supprimerLesObjets
-        //TODO dessinerLesObjets
         dessinerLaTete();
         dessinerLeCorps();
+        dessinerLeBonus();
+        dessinerLesEffets();
 
         requestAnimationFrame(animer);
         renderer.render(scene, camera);
@@ -85,11 +90,7 @@ function Rendu() {
 
         function dessinerLaTete() {
             var tete = jeu.elementsADessiner().tete;
-            var teteDessine = dessinerUnCube(tete, [
-                    new THREE.MeshBasicMaterial({ color: 0x4399FA }),
-                    new THREE.MeshBasicMaterial({ color: 0x4399FA }),
-                    new THREE.MeshBasicMaterial({ color: 0x4399FA })
-            ]);
+            var teteDessine = dessinerUneSphere(tete, new THREE.MeshLambertMaterial({ map: textureEcaille, color: 0x54FFB8}), 1.3);
             scene.add(teteDessine);
             objets.push(teteDessine);
         }
@@ -102,9 +103,9 @@ function Rendu() {
 
             function dessinerUnElementDuCorps(element) {
                 var elementDessine = dessinerUnCube(element, [
-                    new THREE.MeshBasicMaterial({ color: 0x389CFF }),
-                    new THREE.MeshBasicMaterial({ color: 0x6EB6FF }),
-                    new THREE.MeshBasicMaterial({ color: 0xADD6FF })
+                    new THREE.MeshLambertMaterial({ map: textureEcaille, color: 0x000000 }),
+                    new THREE.MeshLambertMaterial({ map: textureEcaille, color: 0x000000 }),
+                    new THREE.MeshLambertMaterial({ map: textureEcaille, color: 0x000000 })
                 ]);
                 scene.add(elementDessine);
                 objets.push(elementDessine);
@@ -113,9 +114,15 @@ function Rendu() {
 
         function dessinerLeBonus() {
             var bonus = jeu.elementsADessiner().bonus;
-            var bonusDessine = dessinerUneSphere(bonus, new THREE.MeshBasicMaterial({ color: 0xFA4343 }));
+            var bonusDessine = dessinerUneSphere(bonus, new THREE.MeshLambertMaterial({ map: texturePomme}) /*new THREE.MeshBasicMaterial({ color: 0xFA4343 })*/);
             scene.add(bonusDessine);
             objets.push(bonusDessine);
+        }
+
+        function dessinerLesEffets() {
+            if(jeu.aMange()) {
+
+            }
         }
     }
 
@@ -129,9 +136,11 @@ function Rendu() {
         return cubeDessine;
     }
 
-    function dessinerUneSphere(cubeADessine, materiel) {
+    function dessinerUneSphere(cubeADessine, materiel, grossissement) {
         var longueurDuCube = cubeADessine.dimension().longueur();
         var rayonDeLaSphere = longueurDuCube / 2;
+        if(grossissement)
+            rayonDeLaSphere *= grossissement;
         var gemotrie = new THREE.SphereGeometry(rayonDeLaSphere);
         var sphereDessine = new THREE.Mesh(gemotrie, materiel);
         positionnerLObjet(sphereDessine, cubeADessine.position());

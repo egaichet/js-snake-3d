@@ -108,7 +108,7 @@ function Cube(param) {
 	    if(objet.estUnCube && estAligneSurUnAxeAvec(objet)) {
 	        var distanceSurLAxe = calculerLaDistanceSurLAxeDAlignement();
 	        var distanceAttendue = calculerLaDistanceAttendue();
-	        return sontJuxtaposés(distanceSurLAxe, distanceAttendue);
+	        return sontJuxtaposes(distanceSurLAxe, distanceAttendue);
 		}
 	    return false;
 
@@ -136,7 +136,7 @@ function Cube(param) {
 	        return dimension.longueur() / 2 + objet.dimension().longueur() / 2;
 	    }
 
-	    function sontJuxtaposés(distanceSurAxe, distanceAttendue) {
+	    function sontJuxtaposes(distanceSurAxe, distanceAttendue) {
 	        return distanceSurAxe > 0 && distanceSurAxe == distanceAttendue;
 	    }
 	};
@@ -209,10 +209,12 @@ function Snake(param) {
 	var DIMENSION_CUBE_DEFAUT = new DimensionCube({longueur: 10});
 	
 	var ceSnake = this;
+    var directionActuelle = new DirectionSnake();
 	var directionSuivante = new DirectionSnake();
 	var scene = new Cube();
 	var corps = new Array();
 	var aMange = false;
+    var estArrete = false;
 	
 	this.estUnSnake = true;
 	this.corps = function() { return corps; };
@@ -222,12 +224,14 @@ function Snake(param) {
 	    }
 
 	    function estUneDirectionValide() {
-	        return !directionSuivante.aLeMemeAxeQue(nouvelleDirection) || nouvelleDirection.enAvant() == directionSuivante.enAvant();
+	        return !directionActuelle.aLeMemeAxeQue(nouvelleDirection) || nouvelleDirection.enAvant() == directionActuelle.enAvant();
 	    }
 	};
 	this.avancer = function () {
-	    ajouterTete();
-	    retirerLaQueue();
+        if(!estArrete) {
+	        ajouterTete();
+	        retirerLaQueue();
+        }
 
 	    function ajouterTete() {
 	        var positionNouvelleTete = initialiserLaPositionDeLaNouvelleTete();
@@ -240,6 +244,7 @@ function Snake(param) {
 	        });
 	        bougerLaTeteSiSortieDeScene();
 	        corps.unshift(nouvelleTete);
+            directionActuelle = directionSuivante;
 
 	        function initialiserLaPositionDeLaNouvelleTete() {
 	            var coordonneesTeteActuelle = corps[0].position();
@@ -338,6 +343,9 @@ function Snake(param) {
 	        }
 	    }
 	};
+    this.arreter = function() {
+        estArrete = true;
+    }
 
 	initialiser();
 
@@ -385,9 +393,9 @@ function Bonus(param) {
 
     var scene = new Cube();
     var bonusCourant = null;
+
     this.estUnBonus = true;
     this.courant = function () { return bonusCourant; };
-    //TODO repenser le positionnement du bonus
     this.genererUnBonus = function (snake) {
         var nouveauBonus = new Cube({
             coordonnees: genererLesCoordonneesDuBonus(),
@@ -422,18 +430,23 @@ function Bonus(param) {
         function genererUneCoordonneeAleatoireEntreDeuxPoints(point1, point2) {
             var distance = Coordonnees.calculerLaDistanceEntreDeuxPointsSurUnAxe(point1, point2);
             var nombreDeCubePossibleSurLaDistance = distance / DIMENSION_BONUS_DEFAUT.longueur();
-            var nombreAleatoireEntre0Et9 = Math.floor(Math.random() * 10);
+            var nombreAleatoireEntre0Et99 = Math.floor(Math.random() * 100);
+            var numeroDuCubeAvecLeBonus = nombreAleatoireEntre0Et99 % nombreDeCubePossibleSurLaDistance;
             var decalagePourCentrerLaCoordonnee = DIMENSION_BONUS_DEFAUT.longueur() / 2;
-            return nombreAleatoireEntre0Et9 % nombreDeCubePossibleSurLaDistance + decalagePourCentrerLaCoordonnee;
+            var decalagePourCentrerSurLAxe = distance / 2;
+            var coordonneeDuCube = numeroDuCubeAvecLeBonus * DIMENSION_BONUS_DEFAUT.longueur() + decalagePourCentrerLaCoordonnee;
+            coordonneeDuCube = coordonneeDuCube - decalagePourCentrerSurLAxe;
+            return coordonneeDuCube;
         }
         function leBonusEstSurUnElementDuSnake() {
+            var estSurUnElementDuSnake;
             if (snake != null && snake.estUnSnake) {
                 return verifierSurLeBonusEstSurUnElementDuSnake();
             }
             return false;
 
             function verifierSurLeBonusEstSurUnElementDuSnake() {
-                var estSurUnElementDuSnake = false;
+                estSurUnElementDuSnake = false;
                 for (var i = 0; i < snake.corps() ; i++) {
                     comparerLesCoordonneesGenereesAvecUnElementDuSnake(snake.corps()[i], estSurUnElementDuSnake);
                 }
@@ -463,19 +476,19 @@ function Bonus(param) {
     }
 }
 
-function JeuSnake() {
+function JeuSnake(param) {
     var LONGUEUR_SCENE = 150;
-    var VITESSE_DEFAUT = 830;
+    var VITESSE_DEFAUT = 500;
     var POINTS_PAR_BONUS = 10;
 
+    var panneauScore, panneauAnnonce;
     var score = 0;
     var continuer = true;
+    var aMange = false;
     var scene = new Cube({ dimension: new DimensionCube({ longueur: LONGUEUR_SCENE }) });
     var bonus = new Bonus({ scene: scene });
     var snake, partieEnCours;
 
-    this.estEnCours = function () { return continuer; };
-    this.scoreActuel = function () { return score; };
     this.changerLaDirectionDuSnake = function (nouvelleDirection) { snake.changerDeDirection(nouvelleDirection); };
     this.lancerUnePartie = function () {
         score = 0;
@@ -499,17 +512,39 @@ function JeuSnake() {
             return corps;
         }
     }
+    this.aMange = function() {
+        return aMange;
+    }
 
+    if(param != null) {
+        initialiser();
+    }
+
+    function initialiser() {
+        if('score' in param) {
+            panneauScore = param.score;
+        }
+        if('annonce' in param) {
+            panneauAnnonce = param.annonce;
+        }
+    }
     function jouer() {
         if (!continuer) {
             clearInterval(partieEnCours);
         }
         if (snake.seMord()) {
             continuer = false;
+            snake.arreter();
+            panneauAnnonce.html('GAME OVER');
+            panneauAnnonce.fadeIn();
         }
         if (snake.mangeUnBonus(bonus)) {
+            aMange = true;
             score += POINTS_PAR_BONUS;
+        } else {
+            aMange = false;
         }
         snake.avancer();
+        panneauScore.html(score);
     }
 }
