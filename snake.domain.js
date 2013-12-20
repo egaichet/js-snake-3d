@@ -482,9 +482,8 @@ function JeuSnake(param) {
     var VITESSE_DEFAUT = 500;
     var POINTS_PAR_BONUS = 10;
 
-    var panneauScore, panneauAnnonce;
+    var panneauScore, panneauAnnonce, panneauResultats;
     var score = 0;
-    var continuer = true;
     var aMange = false;
     var scene = new Cube({ dimension: new DimensionCube({ longueur: LONGUEUR_SCENE }) });
     var bonus = new Bonus({ scene: scene });
@@ -492,10 +491,7 @@ function JeuSnake(param) {
 
     this.changerLaDirectionDuSnake = function (nouvelleDirection) { snake.changerDeDirection(nouvelleDirection); };
     this.lancerUnePartie = function () {
-        score = 0;
-        snake = new Snake({ scene: scene });
-        bonus.genererUnBonus(snake);
-        setInterval(jouer, VITESSE_DEFAUT);
+        lancerLaPartie();
     };
     this.elementsADessiner = function () {
         return {
@@ -517,6 +513,7 @@ function JeuSnake(param) {
         return aMange;
     }
 
+    initialiserLeLocalStorage();
     if(param != null) {
         initialiser();
     }
@@ -528,16 +525,31 @@ function JeuSnake(param) {
         if('annonce' in param) {
             panneauAnnonce = param.annonce;
         }
+        if('resultats' in param) {
+            panneauResultats = param.resultats;
+        }
+    }
+    function lancerLaPartie() {
+        clearInterval(partieEnCours);
+        score = 0;
+        snake = new Snake({ scene: scene });
+        bonus.genererUnBonus(snake);
+        partieEnCours = setInterval(jouer, VITESSE_DEFAUT);
+        afficherLaListeDesScores();
     }
     function jouer() {
-        if (!continuer) {
-            clearInterval(partieEnCours);
-        }
         if (snake.seMord()) {
-            continuer = false;
             snake.arreter();
-            panneauAnnonce.html('GAME OVER');
+            sauvegarderLeScore();
+            afficherLaListeDesScores();
+            panneauAnnonce.html('<p>GAME OVER</p><p><span id="rejouer" class="bouton">Rejouer</span></p>');
+            $('#rejouer').click(function() {
+                panneauAnnonce.fadeOut(function() {
+                    lancerLaPartie();
+                })
+            })
             panneauAnnonce.fadeIn();
+            clearInterval(partieEnCours);
         }
         if (snake.mangeUnBonus(bonus)) {
             aMange = true;
@@ -547,5 +559,34 @@ function JeuSnake(param) {
         }
         snake.avancer();
         panneauScore.html(score);
+    }
+    function sauvegarderLeScore() {
+        if(localStorage) {
+            var scores = JSON.parse(localStorage['scores']);
+            scores.push(score);
+            scores.reverse();
+            localStorage['scores'] = JSON.stringify(scores);
+        }
+    }
+    function afficherLaListeDesScores() {
+        if(localStorage) {
+            initialiserLeLocalStorage();
+            var scores = JSON.parse(localStorage['scores']);
+            if(scores.length == 0) {
+                htmlScores = '<p>Aucun score enregistr&eacute;</p>';
+            } else {
+                htmlScores = '<p>10 meilleurs scores :<br/>'
+                for(var i = 0; i < 10 && i < scores.length; i++) {
+                    htmlScores += (i + 1) + '. ' + scores[i] + '<br/>';
+                }
+                htmlScores += '</p>';
+            }
+            panneauResultats.html(htmlScores);
+        }
+    }
+    function initialiserLeLocalStorage() {
+        if(localStorage && !localStorage['scores']) {
+            localStorage['scores'] = JSON.stringify(new Array());
+        }
     }
 }

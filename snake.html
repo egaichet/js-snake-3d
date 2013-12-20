@@ -11,31 +11,161 @@
         <style>
             body {
                 font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                color: dodgerblue;
             }
-            div#score {
+            header{
+                width: 100%;
+                background-color: dodgerblue;
+                margin-bottom: 5px;
+            }
+            nav {
+                text-align: right;
+                margin-left: 80px;
+                display: inline-block;
+                width: 70%;
+            }
+            nav a {
+                display: inline-block;
+                padding-top: 15px;
+                width: 80px;
+                height: 30px;
+                color: white;
+                text-decoration: none;
+                text-align: center;
+                border: 1px solid dodgerblue;
+            }
+            nav a:hover {
+                color: dodgerblue;
+                background-color: white;
+            }
+            a {
+                cursor: pointer;
+            }
+            div#titre {
+                display: inline-block;
+                width: 20%;
+                color: white;
+                padding: 5px;
+                font-size: 1.5em;
+            }
+            div#controle {
                 display: inline-block;
                 vertical-align: top;
-                width: 30%;
+                width: 25%;
+                height: 600px;
+            }
+            div#container {
+                -webkit-box-shadow: 0 0 20px 0 rgba(0,0,0,0.5);
+                box-shadow: 0 0 20px 0 rgba(0,0,0,0.5);
             }
             div#container {
                 display: inline-block;
                 vertical-align: top;
                 width: 50%;
                 min-width: 450px;
+                height: 600px;
             }
             div#annonce {
                 display: none;
-                margin-left: auto;
-                margin-right: auto;
+                position: absolute;
+                padding: 3px;
+                margin-left: 200px;
+                margin-top: 300px;
+                text-align: center;
+                width: 400px;
+            }
+            div#aide {
+                display:none;
+            }
+            div#a-propos {
+                display:none;
+            }
+            div.box {
+                background-color: white;
+                border: 1px solid dodgerblue;
+            }
+            div#infos {
+                padding-left: 5px;
+                display: inline-block;
+                vertical-align: top;
+                width: 20%;
+            }
+            span.touche {
+                display: inline-block;
+                height: 20px;
+                width: 35px;
+                text-align: center;
+                padding-top: 10px;
+                padding-bottom: 5px;
+                border: 1px solid dodgerblue;
+                margin-top: 2px;
+            }
+            span.touche-presse {
+                border: 1px solid white;
+                background-color: dodgerblue;
+                color: white;
+            }
+            span.bouton {
+                background-color: dodgerblue;
+                color: white;
+                cursor: pointer;
+                text-align: center;
+                padding: 6px;
             }
         </style>
 	</head>
 	<body>
-        <div id="score">
-        </div>
-		<div id="container">
-            <div id="annonce">
+        <header>
+            <div id="titre">
+                Snake 3D
             </div>
-		</div>
+            <nav>
+                <a id="nav-scores">Scores</a>
+                <a id="nav-aide">Aide</a>
+                <a id="nav-a-propos">A propos</a>
+            </nav>
+        </header>
+        <section>
+            <div id="controle">
+                <p>
+                    Score : <span id="score"></span>
+                </p>
+                <p>
+                    D&eacute;placement du Snake :<br/>
+                    <span id="key-37" class="touche">&larr;</span> Gauche<br/>
+                    <span id="key-38" class="touche">&uarr;</span> Haut<br/>
+                    <span id="key-39" class="touche">&rarr;</span> Droite<br/>
+                    <span id="key-40" class="touche">&darr;</span> Bas<br/>
+                    <span id="key-90" class="touche">Z</span> Profondeur avant<br/>
+                    <span id="key-83" class="touche">S</span> Profondeur arri&egrave;re
+                </p>
+                <p>
+                    D&eacute;placement de la cage :<br/>
+                    <span id="key-81" class="touche">Q</span> Pivoter horaire<br/>
+                    <span id="key-68" class="touche">D</span> Pivoter anti-horaire
+                </p>
+            </div>
+            <div id="container">
+                <div id="annonce" class="box">
+                </div>
+            </div>
+            <div id="infos">
+                <div id="resultats" class="infos-box">
+                </div>
+                <div id="aide" class="infos-box">
+                    <p>
+                        Si les textures ne se chargent pas, consulter ce site :<br/>
+                        <a href="https://github.com/mrdoob/three.js/wiki/How-to-run-things-locally">Aide</a>
+                    </p>
+                </div>
+                <div id="a-propos" class="infos-box">
+                    <p>
+                        Projet de mod&eacute;lisation 3D pour la 5&deg; ann&eacute;e de l'EPSI r&eacute;alis&eacute; par Emeric GAICHET en 2013.<br/>
+                        Contact :<br/>
+                        <a href="mailto:egaichet@gmail.com">egaichet@gmail.com</a>
+                    </p>
+                </div>
+            </div>
+        </section>
 	</body>
 </html>
