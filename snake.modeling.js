@@ -18,10 +18,9 @@ function Rendu() {
     texturePomme.wrapS = texturePomme.wrapT = THREE.ClampToEdgeWrapping;
     var textureEcaille = THREE.ImageUtils.loadTexture('texture-ecaille.jpg', new THREE.UVMapping());
     textureEcaille.wrapS = textureEcaille.wrapT = THREE.ClampToEdgeWrapping;
-    var textureParois = THREE.ImageUtils.loadTexture('texture-parois.jpg', new THREE.UVMapping());
+    var textureGrille = THREE.ImageUtils.loadTexture('texture-grille.PNG', new THREE.UVMapping());
     textureEcaille.wrapS = textureEcaille.wrapT = THREE.ClampToEdgeWrapping;
-    var texturePlaque = THREE.ImageUtils.loadTexture('texture-plaque.jpg', new THREE.UVMapping());
-    textureEcaille.wrapS = textureEcaille.wrapT = THREE.ClampToEdgeWrapping;
+
 
     this.scene = function () { return scene; };
     this.camera = function () { return camera };
@@ -38,9 +37,9 @@ function Rendu() {
     };
     this.dessinerLeCubeDeScene = function (cube) {
         cubeDeScene = dessinerUnCube(cube, [
-            new THREE.MeshLambertMaterial({ color: 0x54FFB8, side: THREE.BackSide, map: textureParois }),
-            new THREE.MeshLambertMaterial({ color: 0x8CFFCF, side: THREE.BackSide, map: texturePlaque }),
-            new THREE.MeshLambertMaterial({ color: 0xC2FFE6, side: THREE.BackSide, map: textureParois })
+            new THREE.MeshLambertMaterial({ color: 0xFFFFFF, side: THREE.BackSide, map: textureGrille }),
+            new THREE.MeshLambertMaterial({ color: 0xFFFFFF, side: THREE.BackSide, map: textureGrille }),
+            new THREE.MeshLambertMaterial({ color: 0x35A4F2, side: THREE.BackSide, map: textureGrille })
         ]);
         cubeDeScene.receiveShadow = true;
         scene.add(cubeDeScene);
