@@ -12,6 +12,7 @@ function Rendu() {
     var cubeDeScene;
     var sommetDuCubeDeScene;
     var directionPrecedente;
+    var systemeParticuleEnCours;
 
     var texturePomme = THREE.ImageUtils.loadTexture('texture-pomme.jpg', new THREE.UVMapping());
     texturePomme.wrapS = texturePomme.wrapT = THREE.ClampToEdgeWrapping;
@@ -24,7 +25,6 @@ function Rendu() {
 
     this.scene = function () { return scene; };
     this.camera = function () { return camera };
-    this.sommetScene = function () { return sommetDuCubeDeScene; };
     this.initialiser = function (conteneur) {
         renderer = new THREE.WebGLRenderer();
         renderer.setSize(WIDTH, HEIGHT);
@@ -42,6 +42,7 @@ function Rendu() {
             new THREE.MeshLambertMaterial({ color: 0x8CFFCF, side: THREE.BackSide, map: texturePlaque }),
             new THREE.MeshLambertMaterial({ color: 0xC2FFE6, side: THREE.BackSide, map: textureParois })
         ]);
+        cubeDeScene.receiveShadow = true;
         scene.add(cubeDeScene);
     };
     this.animer = function (jeuAAnimer) {
@@ -65,6 +66,8 @@ function Rendu() {
 
     function placerLesLumieres() {
         var pointDeLumiere = new THREE.PointLight(0xFFFFFF);
+        pointDeLumiere.castShadow = true;
+        pointDeLumiere.shadowDarkness = 0.5;
         scene.add(pointDeLumiere);
 
         var lumiereAmbiante = new THREE.AmbientLight(0xFAFAFA);
@@ -114,14 +117,45 @@ function Rendu() {
 
         function dessinerLeBonus() {
             var bonus = jeu.elementsADessiner().bonus;
-            var bonusDessine = dessinerUneSphere(bonus, new THREE.MeshLambertMaterial({ map: texturePomme}) /*new THREE.MeshBasicMaterial({ color: 0xFA4343 })*/);
+            var bonusDessine = dessinerUneSphere(bonus, new THREE.MeshLambertMaterial({ map: texturePomme}));
             scene.add(bonusDessine);
             objets.push(bonusDessine);
         }
 
         function dessinerLesEffets() {
             if(jeu.aMange()) {
+                var nombreDAnimationsFaites = 0;
+                var animationDeLEffet = setInterval(dessinerLesParticulesDePomme, 300)
+            }
 
+            function dessinerLesParticulesDePomme() {
+                scene.remove(systemeParticuleEnCours);
+                if(nombreDAnimationsFaites <= 4) {
+                    var positionDeLAnimation = jeu.elementsADessiner().tete.position();
+                    var particules = new THREE.Geometry;
+                    var rayonDePlacement = jeu.elementsADessiner().tete.dimension().longueur() * 2;
+                    for(var i = 0; i < 10; i++) {
+                        var particule = new THREE.Vector3(
+                            genererUnNombreAleatoireAutourDeLaCoordonnee(positionDeLAnimation.x(), rayonDePlacement),
+                            genererUnNombreAleatoireAutourDeLaCoordonnee(positionDeLAnimation.y(), rayonDePlacement),
+                            genererUnNombreAleatoireAutourDeLaCoordonnee(positionDeLAnimation.z(), rayonDePlacement)
+                        );
+                        particules.vertices.push(particule);
+                    }
+                    var materielParticule = new THREE.ParticleBasicMaterial({color: 0xCC0A0A, size: 4});
+                    systemeParticuleEnCours = new THREE.ParticleSystem(particules, materielParticule);
+                    scene.add(systemeParticuleEnCours);
+                    nombreDAnimationsFaites++;
+                } else {
+                    clearInterval(animationDeLEffet);
+                }
+            }
+
+            function genererUnNombreAleatoireAutourDeLaCoordonnee(coordonnee, rayon) {
+                var nombreAleatoireEntre0Et500 = Math.random() * 500;
+                var decalageDeLaCoordonne = rayon / 2;
+                var coordonnee = nombreAleatoireEntre0Et500 % rayon - decalageDeLaCoordonne + coordonnee;
+                return coordonnee;
             }
         }
     }
@@ -133,6 +167,7 @@ function Rendu() {
         var material = new THREE.MeshFaceMaterial(materiel);
         var cubeDessine = new THREE.Mesh(gemotrie, material);
         positionnerLObjet(cubeDessine, cubeADessine.position());
+        cubeADessine.castShadow = true;
         return cubeDessine;
     }
 
