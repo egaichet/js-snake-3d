@@ -146,7 +146,7 @@ Test(function() {
 	    verifierLePlacementDe10GenerationsDeBonus();
 
 	    function verifierLePlacementDe10GenerationsDeBonus() {
-	        for (var i = 0; i < 10; i++) {
+	        for (var i = 0; i < 18; i++) {
 	            bonus.genererUnBonus(snake);
 	            OnAttend(bonus.courant().estInclusDansLeCube(scene)).DEtreVrai();
 	            verifierQueLeBonusNEstPasSurUnElementDuSnake();

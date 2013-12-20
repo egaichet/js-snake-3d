@@ -397,14 +397,20 @@ function Bonus(param) {
     this.estUnBonus = true;
     this.courant = function () { return bonusCourant; };
     this.genererUnBonus = function (snake) {
-        var nouveauBonus = new Cube({
-            coordonnees: genererLesCoordonneesDuBonus(),
-            dimension: DIMENSION_BONUS_DEFAUT
-        });
-        if (leBonusEstSurUnElementDuSnake()) {
-            return this(snake);
+        var nouveauBonus;
+        genererLeBonus();
+
+        function genererLeBonus() {
+            nouveauBonus = new Cube({
+                coordonnees: genererLesCoordonneesDuBonus(),
+                dimension: DIMENSION_BONUS_DEFAUT
+            });
+            if (leBonusEstSurUnElementDuSnake()) {
+                genererLeBonus();
+            } else {
+                bonusCourant = nouveauBonus;
+            }
         }
-        bonusCourant = nouveauBonus;
 
         function genererLesCoordonneesDuBonus() {
             var xDuBonus = genererUneCoordonneeAleatoireEntreDeuxPoints(
@@ -439,23 +445,18 @@ function Bonus(param) {
             return coordonneeDuCube;
         }
         function leBonusEstSurUnElementDuSnake() {
-            var estSurUnElementDuSnake;
             if (snake != null && snake.estUnSnake) {
                 return verifierSurLeBonusEstSurUnElementDuSnake();
             }
             return false;
 
             function verifierSurLeBonusEstSurUnElementDuSnake() {
-                estSurUnElementDuSnake = false;
-                for (var i = 0; i < snake.corps() ; i++) {
-                    comparerLesCoordonneesGenereesAvecUnElementDuSnake(snake.corps()[i], estSurUnElementDuSnake);
+                for (var i = 0; i < snake.corps().length ; i++) {
+                    if (snake.corps()[i].aLaMemePosition(nouveauBonus)) {
+                        return true;
+                    }
                 }
-                return estSurUnElementDuSnake
-            }
-            function comparerLesCoordonneesGenereesAvecUnElementDuSnake(element, estSurUnElementDuSnake) {
-                if (element.aLaMemePosition(nouveauBonus)) {
-                    estSurUnElementDuSnake = true;
-                }
+                return false;
             }
         }
     };
